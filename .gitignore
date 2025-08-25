@@ -11,3 +11,5 @@ paper/**
 **/LLSUB*
 rename.py
 data/
+*.egg-info/
+logs/

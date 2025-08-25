@@ -42,11 +42,11 @@ def sample_simulation_parameters(
             raise ValueError(f"Missing simulation parameter: {simulation_parameter}")
 
     is_tuple = lambda val: isinstance(val, tuple)
-    ranges_flat, ranges_treedef = jax.tree_util.tree_flatten(
+    ranges_flat, ranges_treedef = jax.tree_flatten(
         simulation_parameter_ranges, is_leaf=is_tuple
     )
     rng, *rngs = jax.random.split(rng, len(ranges_flat) + 1)
-    rng_tree = jax.tree_util.tree_flatten(ranges_treedef, rngs)
+    rng_tree = jax.tree_unflatten(ranges_treedef, rngs)
 
     def sample_simulation_parameter(
         simulation_parameter_range: Tuple[chex.Numeric, ...],
@@ -61,7 +61,7 @@ def sample_simulation_parameters(
         sample = jax.random.uniform(parameter_rng, minval=minval, maxval=maxval)
         return sample
 
-    return jax.tree_util.tree_map(
+    return jax.tree_map(
         sample_simulation_parameter,
         simulation_parameter_ranges,
         rng_tree,

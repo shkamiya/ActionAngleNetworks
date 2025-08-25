@@ -39,12 +39,12 @@ def sample_simulation_parameters(
             raise ValueError(f"Missing simulation parameter: {simulation_parameter}")
 
     is_tuple = lambda val: isinstance(val, tuple)
-    ranges_flat, ranges_treedef = jax.tree_util.tree_flatten(
+    ranges_flat, ranges_treedef = jax.tree_flatten(
         simulation_parameter_ranges, is_leaf=is_tuple
     )
     rng, shuffle_rng, *rngs = jax.random.split(rng, len(ranges_flat) + 2)
     shuffle_indices = jax.random.permutation(shuffle_rng, num_trajectories)
-    rng_tree = jax.tree_util.tree_unflatten(ranges_treedef, rngs)
+    rng_tree = jax.tree_unflatten(ranges_treedef, rngs)
 
     def sample_simulation_parameter(
         simulation_parameter_range: Tuple[chex.Numeric, ...],
@@ -61,7 +61,7 @@ def sample_simulation_parameters(
         samples = jnp.linspace(minval, maxval, num=num_trajectories)
         return jnp.sort(samples)[shuffle_indices]
 
-    return jax.tree_util.tree_map(
+    return jax.tree_map(
         sample_simulation_parameter,
         simulation_parameter_ranges,
         rng_tree,
@@ -78,7 +78,7 @@ def generate_canonical_coordinates(
     coordinates = jax.vmap(
         generate_canonical_coordinates_for_trajectory, in_axes=(None, 0, None)
     )(t, simulation_parameters, check_convergence)
-    coordinates = jax.tree_util.tree_map(lambda arr: arr.squeeze(axis=0), coordinates)
+    coordinates = jax.tree_map(lambda arr: arr.squeeze(axis=0), coordinates)
     return coordinates
 
 

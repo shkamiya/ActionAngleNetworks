@@ -1,0 +1,70 @@
+!!python/object:ml_collections.config_dict.config_dict.ConfigDict
+_allow_dotted_keys: false
+_convert_dict: true
+_fields:
+  activation: sigmoid
+  batch_size: 100
+  dimensions_per_trajectory: 1
+  encoder_decoder_type: flow
+  eval_cadence: 50
+  flow_type: shear
+  latent_size: 100
+  learning_rate: 0.001
+  model: action-angle-network
+  num_angular_velocity_net_layers: 2
+  num_flow_layers: 20
+  num_samples: 1000
+  num_train_steps: 50000
+  num_trajectories: 2
+  polar_action_angles: true
+  regularizations: !!python/object:ml_collections.config_dict.config_dict.ConfigDict
+    _allow_dotted_keys: false
+    _convert_dict: true
+    _fields:
+      actions: 1.0
+      angular_velocities: 0.0
+      encoded_decoded_differences: 0.0
+    _locked: false
+    _sort_keys: true
+    _type_safe: true
+  rng_seed: 0
+  scaler: standard
+  simulation: harmonic
+  simulation_parameter_ranges: !!python/object:ml_collections.config_dict.config_dict.ConfigDict
+    _allow_dotted_keys: false
+    _convert_dict: true
+    _fields:
+      A: &id001 !!python/tuple
+      - 1
+      - 10
+      k_pair: !!python/tuple
+      - 0
+      k_wall: !!python/tuple
+      - 0.005
+      - 0.01
+      m: !!python/tuple
+      - 1
+      - 5
+      phi: !!python/tuple
+      - 0
+      - 1
+    _locked: false
+    _sort_keys: true
+    _type_safe: true
+  single_step_predictions: true
+  split_on: times
+  test_split_proportion: 0.5
+  test_time_jumps: !!python/tuple
+  - 1
+  - 2
+  - 5
+  - 10
+  - 20
+  - 50
+  time_delta: 1.0
+  train_split_proportion: 0.1
+  train_time_jump_range: *id001
+  train_time_jump_schedule: linear
+_locked: false
+_sort_keys: true
+_type_safe: true
