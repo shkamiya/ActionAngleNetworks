@@ -1,3 +1,51 @@
+## Forked Repository for Action-Angle Networks
+
+This is a forked repository of the official JAX implementation of Action-Angle Networks from our paper ["Learning Integrable Dynamics with Action-Angle Networks"](https://arxiv.org/abs/2211.15338).
+
+
+### Instructions
+
+Clone the repository:
+
+```shell
+git clone https://github.com/shkamiya/ActionAngleNetworks.git
+cd ActionAngleNetworks
+```
+
+Create and activate a virtual environment. You can either use Venv:
+
+```shell
+python -m venv .venv
+source .venv/bin/activate
+```
+
+or Conda:
+
+```shell 
+conda create --name aan python=3.10 -y
+conda activate aan
+```
+
+And then install dependencies with:
+
+```shell
+pip install --upgrade pip && pip install -r requirements.txt
+```
+
+You probably might want to install the ```action_angle_networks``` as a package, which enables to import modules defined such as:
+```python
+from action_angle_networks.models import NormalizingFlow
+```
+
+To do this, just ```pip install``` the package in a developer version by running:
+```shell
+pip install -e .
+```
+while activating the virtual environment.
+
+
+# Below is the original readme.
+
 ## Learning Physical Dynamics with Action-Angle Networks
 
 [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/PyCQA/pylint)
