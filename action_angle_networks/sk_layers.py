@@ -119,3 +119,19 @@ class MLP(nn.Module):
         y = self.activation(y)
         y = nn.Dense(self.dim_output)(y)
         return y if self.res_connection == False else y + x
+
+class MLPFlexible(nn.Module):
+    dim_input: int
+    dim_output: int
+    dim_hidden_list: List[int] # list of hidden dimensions    
+    activation: Callable = nn.relu
+    res_connection: bool = False
+
+    @nn.compact
+    def __call__(self, x):
+        y = x
+        for dim_h in self.dim_hidden_list:
+            y = nn.Dense(dim_h)(y)
+            y = self.activation(y)
+        y = nn.Dense(self.dim_output)(y)
+        return y if self.res_connection == False else y + x
