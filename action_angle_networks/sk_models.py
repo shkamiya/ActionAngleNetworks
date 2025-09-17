@@ -15,13 +15,14 @@ from action_angle_networks.sk_layers import (
 
 class MyActionAngleNetwork(nn.Module):
     dim_config: int # dimenion of configuration space
-    dim_hidden: int # hidden dimension of MLP
-    num_gsblocks: int
+    dim_hidden: int = 64 # hidden dimension of MLP
+    num_gsblocks: int = 20
     type_polar: str = "canonical" # "canonical" or "normal"
     activation: Callable = nn.relu
     mlp_res_connection: bool = False
     theta_predictor: str = "mlp" # "mlp" 
     dim_hidden_list: Optional[List[int]] = None # if theta_predictor is "gradient", this is used for H_of_I
+    #normalize_qp: bool = False # whether to normalize (q,p) before feeding into GSympNet
 
     def setup(self):
         self.gsymp_net = GSympNet(
@@ -53,12 +54,20 @@ class MyActionAngleNetwork(nn.Module):
                 dim_hidden_list=dim_hidden_list,
                 activation=self.activation,
                 res_connection=self.mlp_res_connection,
-            )
+            ) # (B,2n) -> (B,1)
+
             self.theta_generator = lambda I: jax.vmap(jax.grad(H_of_I))(I)
 
     def __call__(self, q, p, delta_t, train: bool = True):
         # q, p: (B, n)
         # delta_t: (B,) or scalar
+        # if self.normalize_qp:
+        #     mean_q = jnp.mean(q, axis=0, keepdims=True)
+        #     mean_p = jnp.mean(p, axis=0, keepdims=True)
+        #     std_q = jnp.std(q, axis=0, keepdims=True)
+        #     std_p = jnp.std(p, axis=0, keepdims=True)
+        #     q = (q - mean_q) / std_q
+        #     p = (p - mean_p) / std_p
 
         # (q, p) -> (Ix, Iy)
         Ix, Iy = self.gsymp_net(q, p)
@@ -78,5 +87,9 @@ class MyActionAngleNetwork(nn.Module):
         # inverse from future: (Ix_, Iy_) -> (q_, p_)
         Ix_, Iy_ = self.inv_polar(I, theta_)
         q_, p_ = self.gsymp_net.inverse(Ix_, Iy_)
+
+        # if self.normalize_qp:
+        #     q_ = q_ * std_q + mean_q
+        #     p_ = p_ * std_p + mean_p
 
         return q_, p_, I, theta
