@@ -48,7 +48,7 @@ class MyActionAngleNetwork(nn.Module):
             )
         elif self.theta_predictor == "gradient":
             dim_hidden_list = [self.dim_hidden, self.dim_hidden] if self.dim_hidden_list is None else self.dim_hidden_list
-            H_of_I = MLPFlexible(
+            self.H_of_I = MLPFlexible(
                 dim_input=self.dim_config,
                 dim_output=1, # output scalar Hamiltonian
                 dim_hidden_list=dim_hidden_list,
@@ -56,7 +56,8 @@ class MyActionAngleNetwork(nn.Module):
                 res_connection=self.mlp_res_connection,
             ) # (B,2n) -> (B,1)
 
-            self.theta_generator = lambda I: jax.vmap(jax.grad(H_of_I))(I)
+            #self.theta_generator = lambda I: jax.vmap(jax.grad(H_of_I))(I)
+            # <- ここで呼ぶとCallCompactUnknownErrorになる
 
     def __call__(self, q, p, delta_t, train: bool = True):
         # q, p: (B, n)
@@ -78,7 +79,15 @@ class MyActionAngleNetwork(nn.Module):
         # I, theta: (B, n)
 
         # I_ = I as I should be constant, only renew theta
-        theta_ = theta + delta_t * self.theta_generator(I)
+        if self.theta_predictor == "mlp":
+            theta_ = theta + delta_t * self.theta_generator(I)
+        elif self.theta_predictor == "gradient":
+            def H_scalar(II):
+                return self.H_of_I(II[None, :]).squeeze() # (n,)→scalar
+            omega = jax.vmap(jax.grad(H_scalar))(I)
+            theta_ = theta + delta_t * omega
+
+        #theta_ = theta + delta_t * self.theta_generator(I)
         # theta_: (B, n)
 
         # wrap theta to [-pi, pi]
