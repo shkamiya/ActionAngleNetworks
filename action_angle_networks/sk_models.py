@@ -82,10 +82,18 @@ class MyActionAngleNetwork(nn.Module):
         if self.theta_predictor == "mlp":
             theta_ = theta + delta_t * self.theta_generator(I)
         elif self.theta_predictor == "gradient":
-            def H_scalar(II):
-                return self.H_of_I(II[None, :]).squeeze() # (n,)→scalar
-            omega = jax.vmap(jax.grad(H_scalar))(I)
-            theta_ = theta + delta_t * omega
+            def hamil_sum_and_hamil(II):
+                HH = self.H_of_I(II)   # (B,)
+                return HH.sum(), HH
+             # Here, you can do ".sum()" as long as batches do not mix.
+            
+            grad_hamil, hamil = jax.grad(hamil_sum_and_hamil, has_aux=True)(I)
+
+
+            # def H_scalar(II):
+            #     return self.H_of_I(II[None, :]).squeeze() # (n,)→scalar
+            # omega = jax.vmap(jax.grad(H_scalar))(I)
+            theta_ = theta + delta_t * grad_hamil
 
         #theta_ = theta + delta_t * self.theta_generator(I)
         # theta_: (B, n)
