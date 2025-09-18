@@ -26,18 +26,17 @@ singularity exec --nv \
   ~/singularity/pytorch_25.01.sif \
   python scripts/e2025_0918_aan_harmonic_motion.py \
     --wandb-project aan_harmonic \
-    --experiment_name aan_harmonic \
+    --experiment-name aan_harmonic \
     --num_steps 5000 \
-    --test-time-jumps [1, 2, 5, 10, 20, 50] \
+    --test-time-jumps 1 2 5 10 20 50 \
     --alpha 1.0 \
     --normalize-qp False \
-    --dim-hidden-list [32, 32, 32] \
+    --dim-hidden-list 32 32 32 \
     --num-gsblocks 20 \
     --activation sigmoid \
     --mlp-res-connection True \
     --batch-size 100 \
-    --learning-rate 0.001 \
-    --weight-decay 0.0001 \
+    --lr 0.001 \    
     --seed 42 \
     --log-every 100 \
     --save-every 1000 \

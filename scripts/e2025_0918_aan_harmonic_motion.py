@@ -137,7 +137,7 @@ def train_step(model, params, opt_state, x, y, delta_t, alpha, key):
     q, p = x[:, :n], x[:, n:]  # (B, n), (B, n)
 
     def loss_fn(pp):
-        q_, p_, I, _ = model.apply({'params': pp}, q, p, delta_t, train=True, rngs={'noise': key})
+        q_, p_, I, _ = model.apply({'params': pp}, q, p, delta_t, train=True)#, rngs={'noise': key})
         #x_ = jnp.concatenate([q_, p_], axis=-1)
         # q_, p_: (B, n), (B, n)
         # I: (B, n) actions
@@ -161,7 +161,7 @@ def eval_batch(model, params, x, y, delta_t, key):
     n = x.shape[1] // 2
     q, p = x[:, :n], x[:, n:]  # (B, 3), (B, 3)
     
-    q_, p_, _, _ = model.apply({'params': params}, q, p, delta_t, train=False, rngs={'noise': key})
+    q_, p_, _, _ = model.apply({'params': params}, q, p, delta_t, train=False)
     #x_ = jnp.concatenate([q_, p_], axis=-1)
 
     loss_q_mse = ((q_ - y[:, :n]) ** 2).mean()
@@ -198,7 +198,7 @@ def main():
     parser.add_argument('--activation', type=str, default='sigmoid', choices=['relu', 'tanh', 'sigmoid'], help='Activation function')
     parser.add_argument('--theta-predictor', type=str, default='gradient', choices=['gradient', 'mlp'], help='Theta predictor type')
     parser.add_argument('--mlp-res-connection', type=str2bool, default=False, help='Use residual connections in MLPs')
-    parser.add_argument('--dim-hidden-list', type=list, default=[64, 64, 64], help='List of hidden dimensions for MLPs')
+    parser.add_argument('--dim-hidden-list', type=int, nargs='+', default=[64, 64, 64], help='List of hidden dimensions for MLPs')
 
 
     # Train
@@ -209,7 +209,7 @@ def main():
     parser.add_argument('--delta-t-max', type=float, default=10.0, help='Maximum delta_t for training')
     parser.add_argument('--batch-size', type=int, default=100, help='Batch size')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
-    parser.add_argument('--test-time-jumps', type=list, default=[1, 2, 5, 10, 20, 50], help='List of delta_t for testing')
+    parser.add_argument('--test-time-jumps', type=int, nargs='+', default=[1, 2, 5, 10, 20, 50], help='List of delta_t for testing')
     parser.add_argument('--alpha', type=float, default=1.0, help='Regularization weight for action variance')
     parser.add_argument('--normalize-qp', type=str2bool, default=False, help='Normalize (q, p) before feeding into GSympNet ')
 
@@ -367,7 +367,7 @@ def main():
 
         # jump幅をサンプル
         max_time_jump_for_step = 1 + (step / args.num_steps) * (args.delta_t_max - 1)
-        jump = jax.random.randint(sub1, shape=(), minval=1, maxval=jnp.round(max_time_jump_for_step) + 1)
+        jump = jax.random.randint(sub1, shape=(), minval=1, maxval=int(max_time_jump_for_step) + 1)
         delta_t_scalar = jnp.asarray(args.delta_t * jump)
 
         # n_train - jump このペアを作る
@@ -438,8 +438,8 @@ def main():
         save_dir = Path(args.save_dir)
         if step % args.save_every == 0 or step == args.num_steps:
             # 定期的にモデルを保存
-            _atomic_save(save_dir / 'checkpoints' / f'params_batch_{batch_idx+1}.params', state.params)
-            print(f"[ckpt] saved: {save_dir / 'checkpoints' / f'params_ep{epoch+1:03d}_batch_{batch_idx+1}.params'}")
+            _atomic_save(save_dir / 'checkpoints' / f'params_step_{step:05d}.params', params)
+            print(f"[ckpt] saved: {save_dir / 'checkpoints' / f'params_step_{step:05d}.params'}")
 
 
     if not args.no_wandb:
