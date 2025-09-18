@@ -4,12 +4,9 @@ method: grid
 
 parameters:
   # 固定値（必要なら CLI 側の既定を上書き）
-  wandb-project: {value: "hhnet_sudoku_itrsa_sweep_v3"}
-  experiment-name: {value: "hhnet_sudoku_itrsa_sweep_v3"}  
-  batch-size: {value: 128}
+  wandb-project: {value: "aan_harmonic_sweep"}
+  experiment-name: {value: "aan_harmonic_sweep"}  
   lr: {value: 3e-4}
-  scheduler: {value: "cosine_warmup"}
-  warmup-steps: {value: 1000}
   
   # 探索パラメータ
   T:

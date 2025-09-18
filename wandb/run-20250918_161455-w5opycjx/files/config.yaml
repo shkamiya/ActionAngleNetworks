@@ -1,0 +1,210 @@
+_wandb:
+    value:
+        cli_version: 0.21.0
+        e:
+            hgny7o4dziakc12um77z7ecmnceu1il4:
+                args:
+                    - --wandb-project
+                    - aan_harmonic
+                    - --experiment-name
+                    - aan_harmonic
+                    - --n
+                    - "2"
+                    - --T
+                    - "1000"
+                    - --delta-t
+                    - "1.0"
+                    - --dim-hidden
+                    - "100"
+                    - --num-gsblocks
+                    - "20"
+                    - --activation
+                    - sigmoid
+                    - --theta-predictor
+                    - gradient
+                    - --mlp-res-connection
+                    - "True"
+                    - --dim-hidden-list
+                    - "32"
+                    - "32"
+                    - "32"
+                    - --num-steps
+                    - "5000"
+                    - --test-time-jumps
+                    - "1"
+                    - "2"
+                    - "5"
+                    - "10"
+                    - "20"
+                    - "50"
+                    - --alpha
+                    - "1.0"
+                    - --normalize-qp
+                    - "False"
+                    - --batch-size
+                    - "100"
+                    - --lr
+                    - "0.001"
+                    - --seed
+                    - "42"
+                    - --log-every
+                    - "100"
+                    - --save-every
+                    - "1000"
+                    - --save-dir
+                    - results/20250918_aan_harmonic
+                codePath: scripts/e2025_0918_aan_harmonic_motion.py
+                codePathLocal: scripts/e2025_0918_aan_harmonic_motion.py
+                cpu_count: 72
+                cpu_count_logical: 72
+                cudaVersion: "12.2"
+                disk:
+                    /:
+                        total: "16777216"
+                        used: "12288"
+                email: shunsuke.kamiya@weblab.t.u-tokyo.ac.jp
+                executable: /usr/bin/python
+                git:
+                    commit: 7948396b46f7679cdfc70ff8ddf1e7f96f29027d
+                    remote: git@github.com:shkamiya/ActionAngleNetworks.git
+                gpu: NVIDIA A100-SXM4-40GB
+                gpu_count: 8
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-0af82d65-2959-c1f5-e360-faf38d2625ec
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-3761cc35-d7c0-0255-9f04-e834176085ad
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-d1e1b62c-4f75-e990-d2c1-f7588ad05098
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-055bbb23-56b7-a56b-0e2a-d102a3780add
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-4d20d34f-3274-6105-8c80-bd2504f2d989
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-39ec097e-ff4d-de20-d41b-a844f37b76ea
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-4be897e5-535d-9665-976d-918e7b58484f
+                    - architecture: Ampere
+                      cudaCores: 6912
+                      memoryTotal: "42949672960"
+                      name: NVIDIA A100-SXM4-40GB
+                      uuid: GPU-97989414-f64b-b4fc-8a16-eab8ae099374
+                host: wa03
+                memory:
+                    total: "540400816128"
+                os: Linux-4.18.0-372.9.1.el8.x86_64-x86_64-with-glibc2.39
+                program: /work/gb20/b20109/ActionAngleNetworks/scripts/e2025_0918_aan_harmonic_motion.py
+                python: CPython 3.12.3
+                root: /work/gb20/b20109/ActionAngleNetworks
+                startedAt: "2025-09-18T07:14:55.730844Z"
+                writerId: hgny7o4dziakc12um77z7ecmnceu1il4
+        m: []
+        python_version: 3.12.3
+        t:
+            "1":
+                - 12
+                - 45
+            "2":
+                - 12
+                - 45
+            "3":
+                - 13
+                - 16
+            "4": 3.12.3
+            "5": 0.21.0
+            "12": 0.21.0
+            "13": linux-x86_64
+A_max:
+    value: 2
+A_min:
+    value: 1
+T:
+    value: 1000
+activation:
+    value: sigmoid
+alpha:
+    value: 1
+batch_size:
+    value: 100
+delta_t:
+    value: 1
+delta_t_max:
+    value: 10
+dim_hidden:
+    value: 100
+dim_hidden_list:
+    value:
+        - 32
+        - 32
+        - 32
+experiment_name:
+    value: aan_harmonic
+k_pair:
+    value: 0.005
+k_wall:
+    value: 0.01
+log_every:
+    value: 100
+lr:
+    value: 0.001
+m_max:
+    value: 3
+m_min:
+    value: 1
+mlp_res_connection:
+    value: true
+"n":
+    value: 2
+normalize_qp:
+    value: false
+num_gsblocks:
+    value: 20
+num_params:
+    value: 10321
+num_steps:
+    value: 5000
+save_dir:
+    value: results/20250918_aan_harmonic
+save_every:
+    value: 1000
+seed:
+    value: 42
+single_step:
+    value: true
+test_split:
+    value: 0.5
+test_time_jumps:
+    value:
+        - 1
+        - 2
+        - 5
+        - 10
+        - 20
+        - 50
+theta_predictor:
+    value: gradient
+train_split:
+    value: 0.1
+type_polar:
+    value: canonical

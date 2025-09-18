@@ -34,14 +34,19 @@ singularity exec --nv \
   python scripts/e2025_0918_aan_harmonic_motion.py \
     --wandb-project aan_harmonic \
     --experiment-name aan_harmonic \
-    --num_steps 5000 \
-    --test-time-jumps 1, 2, 5, 10, 20, 50] \
-    --alpha 1.0 \
-    --normalize-qp False \
-    --dim-hidden-list [32, 32, 32] \
+    --n 2 \
+    --T 1000 \
+    --delta-t 1.0 \
+    --dim-hidden 100 \
     --num-gsblocks 20 \
     --activation sigmoid \
+    --theta-predictor gradient \
     --mlp-res-connection True \
+    --dim-hidden-list 32 32 32 \
+    --num-steps 5000 \
+    --test-time-jumps 1 2 5 10 20 50 \
+    --alpha 1.0 \
+    --normalize-qp False \
     --batch-size 100 \
     --lr 0.001 \
     --seed 42 \
@@ -49,9 +54,6 @@ singularity exec --nv \
     --save-every 1000 \
     --save-dir results/${TODAY}_aan_harmonic
     
-
-
-
 STATUS=$?   # 0=正常, それ以外=異常
 
 # ---- Slack 通知 ----

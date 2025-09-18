@@ -126,18 +126,13 @@ def simulate_coupled_1d_harmonic(
     aux = {"eigvals": eigvals, "eigvecs": V, "w": w}
     return t, q, p, aux
 
-
-
-@jit
-def train_step(model, params, opt_state, x, y, delta_t, alpha, key):
-    # x: (B, 2n) current (q, p)
-    # y: (B, 2n) target  (q, p)
+# jit対象: 配列系だけを引数に。apply_fn は static にする
+def train_step(params, opt_state, x, y, delta_t, alpha, *, apply_fn):
     T = x.shape[0]
     n = x.shape[1] // 2
     q, p = x[:, :n], x[:, n:]  # (B, n), (B, n)
-
     def loss_fn(pp):
-        q_, p_, I, _ = model.apply({'params': pp}, q, p, delta_t, train=True)#, rngs={'noise': key})
+        q_, p_, I, _ = apply_fn({'params': pp}, q, p, delta_t, train=True)#, rngs={'noise': key})
         #x_ = jnp.concatenate([q_, p_], axis=-1)
         # q_, p_: (B, n), (B, n)
         # I: (B, n) actions
@@ -150,24 +145,68 @@ def train_step(model, params, opt_state, x, y, delta_t, alpha, key):
         loss_action = jnp.var(I, axis=0).sum()
 
         return loss_q_se + loss_p_se + alpha * loss_action
-
     loss, grads = value_and_grad(loss_fn)(params)
     updates, opt_state = tx.update(grads, opt_state, params)
     params = optax.apply_updates(params, updates)
     return params, opt_state, loss
 
-@jit
-def eval_batch(model, params, x, y, delta_t, key):
+train_step_jit = jax.jit(train_step, static_argnames=('apply_fn',))
+
+# @jit
+# def train_step(model, params, opt_state, x, y, delta_t, alpha, key):
+#     # x: (B, 2n) current (q, p)
+#     # y: (B, 2n) target  (q, p)
+#     T = x.shape[0]
+#     n = x.shape[1] // 2
+#     q, p = x[:, :n], x[:, n:]  # (B, n), (B, n)
+
+#     def loss_fn(pp):
+#         q_, p_, I, _ = model.apply({'params': pp}, q, p, delta_t, train=True)#, rngs={'noise': key})
+#         #x_ = jnp.concatenate([q_, p_], axis=-1)
+#         # q_, p_: (B, n), (B, n)
+#         # I: (B, n) actions
+        
+#         # prediction loss
+#         loss_q_se = (1./(1.+delta_t))*((q_ - y[:, :n]) ** 2).mean()#.sum()#
+#         loss_p_se = (1./(1.+delta_t))*((p_ - y[:, n:]) ** 2).mean()#.sum()#
+
+#         # actions should be constant
+#         loss_action = jnp.var(I, axis=0).sum()
+
+#         return loss_q_se + loss_p_se + alpha * loss_action
+
+#     loss, grads = value_and_grad(loss_fn)(params)
+#     updates, opt_state = tx.update(grads, opt_state, params)
+#     params = optax.apply_updates(params, updates)
+#     return params, opt_state, loss
+
+def eval_batch(model, params, x, y, delta_t, *, apply_fn):
     n = x.shape[1] // 2
     q, p = x[:, :n], x[:, n:]  # (B, 3), (B, 3)
-    
-    q_, p_, _, _ = model.apply({'params': params}, q, p, delta_t, train=False)
+
+    q_, p_, _, _ = apply_fn({'params': params}, q, p, delta_t, train=False)
     #x_ = jnp.concatenate([q_, p_], axis=-1)
 
     loss_q_mse = ((q_ - y[:, :n]) ** 2).mean()
     loss_p_mse = ((p_ - y[:, n:]) ** 2).mean()
 
     return loss_q_mse + loss_p_mse
+
+eval_batch_jit = jax.jit(eval_batch, static_argnames=('apply_fn',))
+
+
+# @jit
+# def eval_batch(model, params, x, y, delta_t, key):
+#     n = x.shape[1] // 2
+#     q, p = x[:, :n], x[:, n:]  # (B, 3), (B, 3)
+    
+#     q_, p_, _, _ = model.apply({'params': params}, q, p, delta_t, train=False)
+#     #x_ = jnp.concatenate([q_, p_], axis=-1)
+
+#     loss_q_mse = ((q_ - y[:, :n]) ** 2).mean()
+#     loss_p_mse = ((p_ - y[:, n:]) ** 2).mean()
+
+#     return loss_q_mse + loss_p_mse
 
 def main():
     parser = argparse.ArgumentParser(description='Train Action-Angle Network on Harmonic Motion Data')
@@ -177,7 +216,7 @@ def main():
     parser.add_argument('--wandb-project', default='aan_harmonic', help='W&B project name')
     parser.add_argument('--wandb-entity', default=None, help='W&B entity name')
     parser.add_argument('--no-wandb', type=str2bool, default=False, help='Disable W&B logging')
-    parser.add_argument('--wandb-run-name', type=str, default=None, help='W&B run name (default: use exp_name and job ID)')
+    parser.add_argument('--wandb-run-name', type=str, default=None, help='W&B run name (default: use experiment_name and job ID)')
 
     # Simulating Data
     parser.add_argument('--n', type=int, default=2, help='Number of oscillators')
@@ -321,7 +360,7 @@ def main():
         if args.wandb_run_name is not None:
             wandb_run_name = args.wandb_run_name.format(**vars(args), job_id=job_id)
         else:
-            wandb_run_name = f"{wandb_config['exp_name']}_job{job_id}"
+            wandb_run_name = f"{wandb_config['experiment_name']}_job{job_id}"
         #run_name = args.wandb_run_name if args.wandb_run_name else f"{args.experiment_name}_T{args.T}"
 
         wandb.init(
@@ -381,15 +420,14 @@ def main():
         #batch = sample_train_batch(sub)
         # batch = train_curr_q[idx], train_curr_p[idx], train_tgt_q[idx],  train_tgt_p[idx],
 
-        params, opt_state, train_loss = train_step(
-            model=model,
+        params, opt_state, train_loss = train_step_jit(
             params=params,
             opt_state=opt_state,
             x=jnp.concatenate([batch[0], batch[1]], axis=-1),
             y=jnp.concatenate([batch[2], batch[3]], axis=-1),
             alpha=args.alpha,
             delta_t=delta_t_scalar,
-            key=key
+            apply_fn=model.apply,
         )
 
         if not args.no_wandb:
@@ -406,13 +444,13 @@ def main():
                 test_curr_q, test_curr_p = q_test[:-jump], p_test[:-jump] # (T-jump, n)
                 test_tgt_q, test_tgt_p = q_test[jump:], p_test[jump:] # (T-jump, n)
                 delta_t_test = args.delta_t * jump
-                test_loss_jump = eval_batch(
+                test_loss_jump = eval_batch_jit(
                     model=model,
                     params=params,
                     x=jnp.concatenate([test_curr_q, test_curr_p], axis=-1), 
                     y=jnp.concatenate([test_tgt_q, test_tgt_p], axis=-1),
                     delta_t=delta_t_test,
-                    key=eval_key
+                    apply_fn=model.apply,
                 )
                 test_loss_list.append(test_loss_jump)
             
