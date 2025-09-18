@@ -7,14 +7,19 @@ parameters:
   wandb-project: {value: "aan_harmonic_sweep"}
   experiment-name: {value: "aan_harmonic_sweep"}  
   lr: {value: 3e-4}
+  n: {value: 2}
+  delta-t: {value: 1.0}
+  dim-hidden: {value: 100}
+  num-gsblocks: {value: 20}
+  activation: {value: "sigmoid"}
+  theta-predictor: {value: "gradient"}
+  mlp-res-connection: {value: True}
+  num-steps: {value: 5000}
+  test-time-jumps: {value: [1, 2, 5, 10, 20, 50]}
+  alpha: {value: 1.0}
+  normalize-qp: {value: False}
   
   # 探索パラメータ
-  T:
-    values: [4, 8]
-  gamma:
-    values: [0.01, 0.1]
-  z0-std:
-    values: [0.5]
   gt-steps:
     values: [2]   # -1 は「未指定(None)」の意味にする
   pot-kwargs:
