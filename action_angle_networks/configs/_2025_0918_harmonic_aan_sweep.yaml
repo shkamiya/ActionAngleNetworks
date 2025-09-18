@@ -1,0 +1,38 @@
+project: hhnet_sudoku_itrsa_sweep_v3
+program: scripts/s2025_0918_aan_harmonic_motion.py
+method: grid
+
+parameters:
+  # 固定値（必要なら CLI 側の既定を上書き）
+  wandb-project: {value: "hhnet_sudoku_itrsa_sweep_v3"}
+  experiment-name: {value: "hhnet_sudoku_itrsa_sweep_v3"}  
+  batch-size: {value: 128}
+  lr: {value: 3e-4}
+  scheduler: {value: "cosine_warmup"}
+  warmup-steps: {value: 1000}
+  
+  # 探索パラメータ
+  T:
+    values: [4, 8]
+  gamma:
+    values: [0.01, 0.1]
+  z0-std:
+    values: [0.5]
+  gt-steps:
+    values: [2]   # -1 は「未指定(None)」の意味にする
+  pot-kwargs:
+    values: [
+      '{"emb_dim": 192, "num_heads": 6, "hw": [9, 9], "num_tf_blocks": 2, "pos_emb": "rope_learned"}',
+    ]
+  sol-kwargs:
+    values: [
+      '{"emb_dim": 192, "num_heads": 6, "hw": [9, 9], "num_tf_blocks": 2, "pos_emb": "rope_learned"}',
+    ]
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args}
+
+# '{"num_heads": 6, "hw": [9, 9], "num_tf_blocks": 2, "pos_emb": "gta"}', etc

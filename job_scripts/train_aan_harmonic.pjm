@@ -3,8 +3,8 @@
 #PJM -L elapse=02:00:00
 #PJM -L node=1
 #PJM -g gb20
-#PJM -N hhnet_sudoku_attn_ver3
-#PJM -o logs/hhnet_sudoku_attn_ver3_%j.out
+#PJM -N aan_harmonic
+#PJM -o logs/aan_harmonic_%j.out
 #PJM -j
 #PJM -L jobenv=singularity
 
@@ -12,7 +12,7 @@
 module purge
 module load singularity
 
-cd /work/gb20/b20109/kamiya_asymmetry
+cd /work/gb20/b20109/ActionAngleNetworks
 
 export REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
 export WANDB_API_KEY=ac9bc3f259163957d95686abca5fb49df1713b65
@@ -29,12 +29,13 @@ echo "Job started at: $(date)"
 # --- Sweep Agent実行 ---
 singularity exec --nv \
   --bind $(pwd):/workspace \
-  ~/singularity/pytorch_25.01.sif \
+  --bind /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt \
+  ~/singularity/kamiya_wisteria.sif \
   python scripts/e2025_0918_aan_harmonic_motion.py \
     --wandb-project aan_harmonic \
     --experiment-name aan_harmonic \
     --num_steps 5000 \
-    --test-time-jumps [1, 2, 5, 10, 20, 50] \
+    --test-time-jumps 1, 2, 5, 10, 20, 50] \
     --alpha 1.0 \
     --normalize-qp False \
     --dim-hidden-list [32, 32, 32] \

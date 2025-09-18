@@ -1,7 +1,7 @@
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Sequence
 import optax
 
 class GSBlock(nn.Module):
@@ -122,8 +122,8 @@ class MLP(nn.Module):
 
 class MLPFlexible(nn.Module):
     dim_input: int
+    dim_hidden_list: Sequence[int] # list of hidden dimensions
     dim_output: Optional[int] = None
-    dim_hidden_list: List[int] # list of hidden dimensions
     activation: Callable = nn.relu
     res_connection: bool = False
 

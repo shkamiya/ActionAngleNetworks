@@ -200,7 +200,6 @@ def main():
     parser.add_argument('--mlp-res-connection', type=str2bool, default=False, help='Use residual connections in MLPs')
     parser.add_argument('--dim-hidden-list', type=int, nargs='+', default=[64, 64, 64], help='List of hidden dimensions for MLPs')
 
-
     # Train
     parser.add_argument('--train-split', type=float, default=0.1, help='Proportion of data for training')
     parser.add_argument('--test-split', type=float, default=0.5, help='Proportion of data for testing')    
@@ -279,7 +278,6 @@ def main():
     num_params = sum(jax.tree_util.tree_leaves(jax.tree_util.tree_map(lambda x: x.size, params)))
     print(f'Total parameters: {num_params}')
 
-
     # wandb
     if not args.no_wandb:
         wandb_config = {
@@ -349,18 +347,14 @@ def main():
 
     os.makedirs(jobdir, exist_ok=True)
 
-
     # オプティマイザ
     tx = optax.adam(1e-3)
     opt_state = tx.init(params)
-
 
     print("Starting training...")
     print(f"num_steps: {args.num_steps}, delta_t_max: {args.delta_t_max}, batch_size: {args.batch_size}, log_every: {args.log_every}")
     print(f"test_time_jumps: {args.test_time_jumps}")
     print(f"alpha (weight for action constancy loss): {args.alpha}")
-
-
 
     for step in range(1, args.num_steps + 1):
         key, sub1, sub2 = jax.random.split(key, 3)
