@@ -1,0 +1,95 @@
+{
+  "os": "Linux-5.14.0-427.13.1.el9_4.aarch64+64k-aarch64-with-glibc2.39",
+  "python": "CPython 3.12.3",
+  "startedAt": "2025-09-19T04:35:54.607621Z",
+  "args": [
+    "--wandb-project",
+    "aan_harmonic",
+    "--experiment-name",
+    "aan_harmonic",
+    "--n",
+    "2",
+    "--T",
+    "1000",
+    "--delta-t",
+    "1.0",
+    "--dim-hidden",
+    "100",
+    "--num-gsblocks",
+    "20",
+    "--activation",
+    "sigmoid",
+    "--theta-predictor",
+    "gradient",
+    "--mlp-res-connection",
+    "True",
+    "--dim-hidden",
+    "64",
+    "--dim-hidden-list",
+    "32",
+    "32",
+    "32",
+    "--num-steps",
+    "5000",
+    "--test-time-jumps",
+    "1",
+    "2",
+    "5",
+    "10",
+    "20",
+    "50",
+    "--alpha",
+    "0.01",
+    "--normalize-qp",
+    "False",
+    "--batch-size",
+    "100",
+    "--lr",
+    "0.001",
+    "--seed",
+    "42",
+    "--log-every",
+    "100",
+    "--save-every",
+    "1000",
+    "--save-dir",
+    "results/20250919_aan_harmonic"
+  ],
+  "program": "/work/gj26/b20109/ActionAngleNetworks/scripts/e2025_0918_aan_harmonic_motion.py",
+  "codePath": "scripts/e2025_0918_aan_harmonic_motion.py",
+  "git": {
+    "remote": "git@github.com:shkamiya/ActionAngleNetworks.git",
+    "commit": "758e69b1e6e11f7dc5e4a041c38d18df01875ea1"
+  },
+  "root": "/work/gj26/b20109/ActionAngleNetworks",
+  "host": "mg0051",
+  "executable": "/usr/bin/python",
+  "codePathLocal": "scripts/e2025_0918_aan_harmonic_motion.py",
+  "cpu_count": 72,
+  "cpu_count_logical": 72,
+  "gpu": "NVIDIA GH200 120GB",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "67108864",
+      "used": "196608"
+    }
+  },
+  "memory": {
+    "total": "228161224704"
+  },
+  "cpu": {
+    "count": 72,
+    "countLogical": 72
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GH200 120GB",
+      "memoryTotal": "102625181696",
+      "cudaCores": 16896,
+      "architecture": "Hopper",
+      "uuid": "GPU-958e9eff-3fc5-8113-dea2-024178863685"
+    }
+  ],
+  "cudaVersion": "12.4"
+}

@@ -89,12 +89,20 @@ def _normal_mode_eigendecomposition(params: HarmonicParams):
     I = np.eye(n)
     J = np.ones((n, n))
     L = -(params.k_wall + n * params.k_pair) * I + params.k_pair * J
-    M_inv = np.diag(1.0 / params.m)
-    M_inv_L = M_inv @ L
-    eigvals, eigvecs = np.linalg.eig(M_inv_L)
-    eigvals = eigvals.real
-    eigvecs = eigvecs.real
-    return eigvals, eigvecs  # (n,), (n,n)
+    M_sqrt_inv = np.diag(1.0 / np.sqrt(params.m))
+
+    # 対称化
+    S = M_sqrt_inv @ L @ M_sqrt_inv
+    eigvals, U = np.linalg.eigh(S)              # 決定的になりやすい
+    V = M_sqrt_inv @ U                          # 元の一般化固有ベクトルへ
+    return eigvals.real, V.real                 # (n,), (n,n)
+
+    # M_inv = np.diag(1.0 / params.m)
+    # M_inv_L = M_inv @ L
+    # eigvals, eigvecs = np.linalg.eig(M_inv_L)
+    # eigvals = eigvals.real
+    # eigvecs = eigvecs.real
+    # return eigvals, eigvecs  # (n,), (n,n)
 
 def simulate_coupled_1d_harmonic(
     params: HarmonicParams, num_steps: int, dt: float
@@ -241,6 +249,7 @@ def main():
     parser.add_argument('--theta-predictor', type=str, default='gradient', choices=['gradient', 'mlp'], help='Theta predictor type')
     parser.add_argument('--mlp-res-connection', type=str2bool, default=False, help='Use residual connections in MLPs')
     parser.add_argument('--dim-hidden-list', type=int, nargs='+', default=[64, 64, 64], help='List of hidden dimensions for MLPs')
+    parser.add_argument('--learn-scale', type=str2bool, default=True, help='Learn scale parameters for (q, p)')
 
     # Train
     parser.add_argument('--train-split', type=float, default=0.1, help='Proportion of data for training')
@@ -305,6 +314,7 @@ def main():
         mlp_res_connection=args.mlp_res_connection,
         theta_predictor=args.theta_predictor,
         dim_hidden_list=args.dim_hidden_list,
+        learn_scale=args.learn_scale,
     )
 
     print(
@@ -313,7 +323,7 @@ def main():
 
 
     key = jax.random.PRNGKey(args.seed)
-    eval_key = jax.random.PRNGKey(args.seed + 123)
+    # eval_key = jax.random.PRNGKey(args.seed + 123)
 
     q0 = jnp.zeros((1, int(args.n)))
     p0 = jnp.zeros((1, int(args.n)))

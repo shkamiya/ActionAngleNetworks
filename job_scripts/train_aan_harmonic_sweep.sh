@@ -22,34 +22,27 @@ export WANDB_API_KEY=ac9bc3f259163957d95686abca5fb49df1713b65
 
 TODAY=$(date '+%Y%m%d')
 
-# --- Sweep Agent実行 ---
+# --- Sweep IDを環境変数またはファイルから取得 ---
+if [ -z "$WANDB_SWEEP_ID" ]; then
+    if [ -f "sweep_id.txt" ]; then
+        WANDB_SWEEP_ID=$(cat sweep_id.txt)
+    else
+        echo "ERROR: WANDB_SWEEP_ID not set and sweep_id.txt not found"
+        echo "Run: wandb sweep configs/_sweep.yaml"
+        echo "Then: echo 'your_sweep_id' > sweep_id.txt"
+        exit 1
+    fi
+fi
+
+echo "Job started at: $(date)"
+
+# --- Single training run ---
 singularity exec --nv \
   --bind $(pwd):/workspace \
+  --bind /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt \
   ~/singularity/pytorch_25.01.sif \
-  python scripts/e2025_0918_aan_harmonic_motion.py \
-    --wandb-project aan_harmonic \
-    --experiment-name aan_harmonic \
-    --n 2 \
-    --T 1000 \
-    --delta-t 1.0 \
-    --dim-hidden 100 \
-    --num-gsblocks 20 \
-    --activation sigmoid \
-    --theta-predictor gradient \
-    --mlp-res-connection True \
-    --dim-hidden 64 \
-    --dim-hidden-list 32 32 32 \
-    --num-steps 5000 \
-    --test-time-jumps 1 2 5 10 20 50 \
-    --alpha 0.1 \
-    --normalize-qp False \
-    --learn-scale True \
-    --batch-size 100 \
-    --lr 0.001 \
-    --seed 42 \
-    --log-every 100 \
-    --save-every 1000 \
-    --save-dir results/${TODAY}_aan_harmonic
+  python -m wandb agent "$WANDB_SWEEP_ID"
+
 
 STATUS=$?   # 0=正常, それ以外=異常
 
