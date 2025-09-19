@@ -23,6 +23,7 @@ class MyActionAngleNetwork(nn.Module):
     theta_predictor: str = "mlp" # "mlp" 
     dim_hidden_list: Optional[List[int]] = None # if theta_predictor is "gradient", this is used for H_of_I
     #normalize_qp: bool = False # whether to normalize (q,p) before feeding into GSympNet
+    learn_scale: bool = False # whether to learn scale parameters for (q,p)
 
     def setup(self):
         self.gsymp_net = GSympNet(
@@ -58,6 +59,13 @@ class MyActionAngleNetwork(nn.Module):
 
             #self.theta_generator = lambda I: jax.vmap(jax.grad(H_of_I))(I)
             # <- ここで呼ぶとCallCompactUnknownErrorになる
+        
+        if self.learn_scale:
+            self.scale_q = self.param('scale_q', nn.initializers.ones, (self.dim_config,))
+            self.scale_p = self.param('scale_p', nn.initializers.ones, (self.dim_config,))
+        else:
+            self.scale_q = 1.0
+            self.scale_p = 1.0
 
     def __call__(self, q, p, delta_t, train: bool = True):
         # q, p: (B, n)
@@ -69,6 +77,12 @@ class MyActionAngleNetwork(nn.Module):
         #     std_p = jnp.std(p, axis=0, keepdims=True)
         #     q = (q - mean_q) / std_q
         #     p = (p - mean_p) / std_p
+
+        # scale q, p
+        q_scale= self.scale_q / jnp.sqrt( self.scale_q * self.scale_p )
+        p_scale = self.scale_p / jnp.sqrt( self.scale_q * self.scale_p )
+        q = q * q_scale.unsqueeze(0)
+        p = p * p_scale.unsqueeze(0)
 
         # (q, p) -> (Ix, Iy)
         Ix, Iy = self.gsymp_net(q, p)
@@ -89,7 +103,6 @@ class MyActionAngleNetwork(nn.Module):
             
             grad_hamil, hamil = jax.grad(hamil_sum_and_hamil, has_aux=True)(I)
 
-
             # def H_scalar(II):
             #     return self.H_of_I(II[None, :]).squeeze() # (n,)→scalar
             # omega = jax.vmap(jax.grad(H_scalar))(I)
@@ -104,6 +117,9 @@ class MyActionAngleNetwork(nn.Module):
         # inverse from future: (Ix_, Iy_) -> (q_, p_)
         Ix_, Iy_ = self.inv_polar(I, theta_)
         q_, p_ = self.gsymp_net.inverse(Ix_, Iy_)
+
+        q_ = q * 1./q_scale.unsqueeze(0)
+        p_ = p * 1./p_scale.unsqueeze(0)
 
         # if self.normalize_qp:
         #     q_ = q_ * std_q + mean_q
