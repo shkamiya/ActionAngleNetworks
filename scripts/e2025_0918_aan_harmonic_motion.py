@@ -276,6 +276,10 @@ def main():
     )
     t, q, p, aux = simulate_coupled_1d_harmonic(params, num_steps=args.T, dt=args.delta_t)
     
+    # zero-mean
+    q = q - q.mean(axis=0, keepdims=True)
+    p = p - p.mean(axis=0, keepdims=True)
+    
     print(f"Training on {args.n}-dim harmonic oscillator data with {args.T} samples, dt={args.delta_t}")
     print(f"Masses: {params.m}")
     print(f"q shape: {q.shape}, p shape: {p.shape}")
