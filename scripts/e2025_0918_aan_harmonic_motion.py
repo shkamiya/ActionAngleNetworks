@@ -138,8 +138,11 @@ def train_step(params, opt_state, x, y, delta_t, alpha, *, apply_fn, tx):
         # I: (B, n) actions
         
         # prediction loss
-        loss_q_se = (1./(1.+delta_t))*((q_ - y[:, :n]) ** 2).mean()#.sum()#
-        loss_p_se = (1./(1.+delta_t))*((p_ - y[:, n:]) ** 2).mean()#.sum()#
+        loss_q_se = ((q_ - y[:, :n]) ** 2).mean()#.sum()#
+        loss_p_se = ((p_ - y[:, n:]) ** 2).mean()#.sum()#
+
+        # loss_q_se /= (1./(1.+delta_t))
+        # loss_p_se /= (1./(1.+delta_t))
 
         # actions should be constant
         loss_action = jnp.var(I, axis=0).sum()
