@@ -13,3 +13,4 @@ rename.py
 data/
 *.egg-info/
 logs/
+/results/
