@@ -1,0 +1,53 @@
+wandb_version: 1
+
+activation:
+  value: sigmoid
+alpha:
+  value: 0
+batch-size:
+  value: 100
+delta-t:
+  value: 1
+dim-hidden:
+  value: 100
+dim-hidden-list:
+  value:
+  - 32
+  - 32
+  - 32
+experiment-name:
+  value: aan_harmonic_sweep
+learn-scale:
+  value: true
+log-every:
+  value: 100
+lr:
+  value: 1e-3
+mlp-res-connection:
+  value: true
+n:
+  value: 2
+normalize-qp:
+  value: false
+num-gsblocks:
+  value: 20
+num-steps:
+  value: 5000
+save-dir:
+  value: results/aan_harmonic_sweep
+save-every:
+  value: 500
+seed:
+  value: 42
+test-time-jumps:
+  value:
+  - 1
+  - 2
+  - 5
+  - 10
+  - 20
+  - 50
+theta-predictor:
+  value: gradient
+wandb-project:
+  value: aan_harmonic_sweep

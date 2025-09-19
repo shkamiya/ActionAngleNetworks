@@ -19,7 +19,6 @@ parameters:
   seed: {value: 42}
   log-every: {value: 100}
   save-every: {value: 500}
-  save-dir: {value: "results/aan_harmonic_sweep"}
   
   # 探索パラメータ
   lr: 

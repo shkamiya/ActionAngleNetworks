@@ -1,0 +1,66 @@
+{
+  "os": "Linux-5.14.0-427.13.1.el9_4.aarch64+64k-aarch64-with-glibc2.39",
+  "python": "CPython 3.12.3",
+  "startedAt": "2025-09-19T10:48:36.708375Z",
+  "args": [
+    "--activation=sigmoid",
+    "--alpha=0",
+    "--batch-size=100",
+    "--delta-t=1",
+    "--dim-hidden=100",
+    "--dim-hidden-list=[32, 32, 32]",
+    "--experiment-name=aan_harmonic_sweep",
+    "--learn-scale=False",
+    "--log-every=100",
+    "--lr=5e-4",
+    "--mlp-res-connection=False",
+    "--n=2",
+    "--normalize-qp=False",
+    "--num-gsblocks=20",
+    "--num-steps=5000",
+    "--save-dir=results/aan_harmonic_sweep",
+    "--save-every=500",
+    "--seed=42",
+    "--test-time-jumps=[1, 2, 5, 10, 20, 50]",
+    "--theta-predictor=gradient",
+    "--wandb-project=aan_harmonic_sweep"
+  ],
+  "program": "/work/gj26/b20109/ActionAngleNetworks/scripts/s2025_0918_aan_harmonic_motion.py",
+  "codePath": "scripts/s2025_0918_aan_harmonic_motion.py",
+  "git": {
+    "remote": "git@github.com:shkamiya/ActionAngleNetworks.git",
+    "commit": "e71d4f660baeb94fd0955bb94c59b22956bbcb9d"
+  },
+  "email": "shunsuke.kamiya@weblab.t.u-tokyo.ac.jp",
+  "root": "/work/gj26/b20109/ActionAngleNetworks",
+  "host": "mg0049",
+  "executable": "/usr/bin/python",
+  "codePathLocal": "scripts/s2025_0918_aan_harmonic_motion.py",
+  "cpu_count": 72,
+  "cpu_count_logical": 72,
+  "gpu": "NVIDIA GH200 120GB",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "67108864",
+      "used": "196608"
+    }
+  },
+  "memory": {
+    "total": "228161224704"
+  },
+  "cpu": {
+    "count": 72,
+    "countLogical": 72
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GH200 120GB",
+      "memoryTotal": "102625181696",
+      "cudaCores": 16896,
+      "architecture": "Hopper",
+      "uuid": "GPU-6c01adb2-0596-0d43-5234-890a104b55ad"
+    }
+  ],
+  "cudaVersion": "12.4"
+}

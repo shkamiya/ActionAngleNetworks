@@ -32,6 +32,7 @@ from action_angle_networks.sk_models import MyActionAngleNetwork
 # logging.set_verbosity(logging.INFO)
 from dataclasses import dataclass
 from typing import Optional, Tuple, Dict
+import ast
 
 ## Helper functions
 def str2bool(x):
@@ -50,6 +51,18 @@ def _atomic_save(path: Path, params) -> None:
     with open(tmp, "wb") as f:
         f.write(serialization.to_bytes(params))
     os.replace(tmp, path)  # atomic
+
+def parse_int_list(x):
+    if isinstance(x, (list, tuple)):
+        return [int(v) for v in x]
+    try:
+        v = ast.literal_eval(x)  # "[32, 32, 32]" / "(1,2,3)" などに対応
+        if isinstance(v, (list, tuple)):
+            return [int(i) for i in v]
+    except Exception:
+        pass
+    # "1,2,3" や "1 2 3" にも対応
+    return [int(t) for t in str(x).replace(',', ' ').split()]
 
 ## Helper classes and functions for simulating coupled 1D harmonic oscillators
 @dataclass
@@ -248,7 +261,7 @@ def main():
     parser.add_argument('--activation', type=str, default='sigmoid', choices=['relu', 'tanh', 'sigmoid'], help='Activation function')
     parser.add_argument('--theta-predictor', type=str, default='gradient', choices=['gradient', 'mlp'], help='Theta predictor type')
     parser.add_argument('--mlp-res-connection', type=str2bool, default=False, help='Use residual connections in MLPs')
-    parser.add_argument('--dim-hidden-list', type=int, nargs='+', default=[64, 64, 64], help='List of hidden dimensions for MLPs')
+    parser.add_argument('--dim-hidden-list', type=parse_int_list, default=[64, 64, 64], help='List of hidden dimensions for MLPs')
     parser.add_argument('--learn-scale', type=str2bool, default=True, help='Learn scale parameters for (q, p)')
 
     # Train
@@ -259,7 +272,7 @@ def main():
     parser.add_argument('--delta-t-max', type=float, default=10.0, help='Maximum delta_t for training')
     parser.add_argument('--batch-size', type=int, default=100, help='Batch size')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
-    parser.add_argument('--test-time-jumps', type=int, nargs='+', default=[1, 2, 5, 10, 20, 50], help='List of delta_t for testing')
+    parser.add_argument('--test-time-jumps', type=parse_int_list, default=[1, 2, 5, 10, 20, 50], help='List of delta_t for testing')
     parser.add_argument('--alpha', type=float, default=1.0, help='Regularization weight for action variance')
     parser.add_argument('--normalize-qp', type=str2bool, default=False, help='Normalize (q, p) before feeding into GSympNet ')
 
