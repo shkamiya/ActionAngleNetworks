@@ -118,8 +118,8 @@ class MyActionAngleNetwork(nn.Module):
         Ix_, Iy_ = self.inv_polar(I, theta_)
         q_, p_ = self.gsymp_net.inverse(Ix_, Iy_)
 
-        q_ = q * 1./q_scale[None,...]
-        p_ = p * 1./p_scale[None,...]
+        q_ = q_ * 1./q_scale[None,...]
+        p_ = p_ * 1./p_scale[None,...]
 
         # if self.normalize_qp:
         #     q_ = q_ * std_q + mean_q
