@@ -127,7 +127,7 @@ def simulate_coupled_1d_harmonic(
     return t, q, p, aux
 
 # jit対象: 配列系だけを引数に。apply_fn は static にする
-def train_step(params, opt_state, x, y, delta_t, alpha, *, apply_fn):
+def train_step(params, opt_state, x, y, delta_t, alpha, *, apply_fn, tx):
     T = x.shape[0]
     n = x.shape[1] // 2
     q, p = x[:, :n], x[:, n:]  # (B, n), (B, n)
@@ -150,7 +150,7 @@ def train_step(params, opt_state, x, y, delta_t, alpha, *, apply_fn):
     params = optax.apply_updates(params, updates)
     return params, opt_state, loss
 
-train_step_jit = jax.jit(train_step, static_argnames=('apply_fn',))
+train_step_jit = jax.jit(train_step, static_argnames=('apply_fn','tx'))
 
 # @jit
 # def train_step(model, params, opt_state, x, y, delta_t, alpha, key):
@@ -180,7 +180,7 @@ train_step_jit = jax.jit(train_step, static_argnames=('apply_fn',))
 #     params = optax.apply_updates(params, updates)
 #     return params, opt_state, loss
 
-def eval_batch(model, params, x, y, delta_t, *, apply_fn):
+def eval_batch(params, x, y, delta_t, *, apply_fn):
     n = x.shape[1] // 2
     q, p = x[:, :n], x[:, n:]  # (B, 3), (B, 3)
 
@@ -387,7 +387,7 @@ def main():
     os.makedirs(jobdir, exist_ok=True)
 
     # オプティマイザ
-    tx = optax.adam(1e-3)
+    tx = optax.adam(learning_rate=args.lr)
     opt_state = tx.init(params)
 
     print("Starting training...")
@@ -428,6 +428,7 @@ def main():
             alpha=args.alpha,
             delta_t=delta_t_scalar,
             apply_fn=model.apply,
+            tx=tx,
         )
 
         if not args.no_wandb:
@@ -445,7 +446,6 @@ def main():
                 test_tgt_q, test_tgt_p = q_test[jump:], p_test[jump:] # (T-jump, n)
                 delta_t_test = args.delta_t * jump
                 test_loss_jump = eval_batch_jit(
-                    model=model,
                     params=params,
                     x=jnp.concatenate([test_curr_q, test_curr_p], axis=-1), 
                     y=jnp.concatenate([test_tgt_q, test_tgt_p], axis=-1),
@@ -467,7 +467,7 @@ def main():
                     }, step=step)
 
 
-        save_dir = Path(args.save_dir)
+        save_dir = Path(args.save_dir) / f"{args.experiment_name}_job{job_id}"
         if step % args.save_every == 0 or step == args.num_steps:
             # 定期的にモデルを保存
             _atomic_save(save_dir / 'checkpoints' / f'params_step_{step:05d}.params', params)

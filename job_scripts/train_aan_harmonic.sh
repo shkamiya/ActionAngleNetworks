@@ -14,9 +14,11 @@ module load singularity
 # --- ログは $PBS_O_WORKDIR に出る ---
 cd $PBS_O_WORKDIR
 
+export CUDNN_LIB_DIR=/work/gj26/b20109/.local/lib/python3.12/site-packages/nvidia/cudnn/lib
+source /work/gj26/b20109/env_cudnn98.sh
+
 export REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
-# export WANDB_API_KEY=ac9bc3f259163957d95686abca5fb49df1713b65
-# export WANDB_PROJECT=my_acion_angle
+export WANDB_API_KEY=ac9bc3f259163957d95686abca5fb49df1713b65
 
 TODAY=$(date '+%Y%m%d')
 
@@ -27,23 +29,26 @@ singularity exec --nv \
   python scripts/e2025_0918_aan_harmonic_motion.py \
     --wandb-project aan_harmonic \
     --experiment-name aan_harmonic \
-    --num_steps 5000 \
-    --test-time-jumps 1 2 5 10 20 50 \
-    --alpha 1.0 \
-    --normalize-qp False \
-    --dim-hidden-list 32 32 32 \
+    --n 2 \
+    --T 1000 \
+    --delta-t 1.0 \
+    --dim-hidden 100 \
     --num-gsblocks 20 \
     --activation sigmoid \
+    --theta-predictor gradient \
     --mlp-res-connection True \
+    --dim-hidden 64 \
+    --dim-hidden-list 32 32 32 \
+    --num-steps 5000 \
+    --test-time-jumps 1 2 5 10 20 50 \
+    --alpha 0.01 \
+    --normalize-qp False \
     --batch-size 100 \
-    --lr 0.001 \    
+    --lr 0.001 \
     --seed 42 \
     --log-every 100 \
     --save-every 1000 \
     --save-dir results/${TODAY}_aan_harmonic
-    
-
-
 
 STATUS=$?   # 0=正常, それ以外=異常
 

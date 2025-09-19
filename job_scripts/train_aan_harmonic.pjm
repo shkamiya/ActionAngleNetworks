@@ -39,9 +39,9 @@ singularity exec --nv \
     --delta-t 1.0 \
     --dim-hidden 100 \
     --num-gsblocks 20 \
-    --activation sigmoid \
+    --activation silu \
     --theta-predictor gradient \
-    --mlp-res-connection True \
+    --mlp-res-connection False \
     --dim-hidden-list 32 32 32 \
     --num-steps 5000 \
     --test-time-jumps 1 2 5 10 20 50 \

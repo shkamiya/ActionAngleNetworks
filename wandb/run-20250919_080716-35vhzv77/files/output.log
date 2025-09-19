@@ -1,0 +1,16 @@
+Starting training...
+num_steps: 5000, delta_t_max: 10.0, batch_size: 100, log_every: 100
+test_time_jumps: [1, 2, 5, 10, 20, 50]
+alpha (weight for action constancy loss): 1.0
+Traceback (most recent call last):
+  File "/work/gj26/b20109/ActionAngleNetworks/scripts/e2025_0918_aan_harmonic_motion.py", line 493, in <module>
+    main()
+  File "/work/gj26/b20109/ActionAngleNetworks/scripts/e2025_0918_aan_harmonic_motion.py", line 423, in main
+    params, opt_state, train_loss = train_step_jit(
+                                    ^^^^^^^^^^^^^^^
+  File "/work/gj26/b20109/ActionAngleNetworks/scripts/e2025_0918_aan_harmonic_motion.py", line 149, in train_step
+    updates, opt_state = tx.update(grads, opt_state, params)
+                         ^^
+NameError: name 'tx' is not defined
+--------------------
+For simplicity, JAX has removed its internal frames from the traceback of the following exception. Set JAX_TRACEBACK_FILTERING=off to include these.
