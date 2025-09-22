@@ -1,0 +1,137 @@
+_wandb:
+    value:
+        cli_version: 0.20.1
+        m: []
+        python_version: 3.12.3
+        t:
+            "1":
+                - 12
+                - 45
+            "2":
+                - 12
+                - 45
+            "3":
+                - 2
+                - 13
+                - 14
+                - 16
+                - 55
+                - 61
+            "4": 3.12.3
+            "5": 0.20.1
+            "12": 0.20.1
+            "13": linux-aarch64
+A_max:
+    value: 2
+A_min:
+    value: 1
+T:
+    value: 1000
+activation:
+    value: sigmoid
+alpha:
+    value: 0.5
+batch-size:
+    value: 100
+batch_size:
+    value: 100
+delta-t:
+    value: 1
+delta_t:
+    value: 1
+delta_t_max:
+    value: 10
+dim-hidden:
+    value: 100
+dim-hidden-list:
+    value:
+        - 32
+        - 32
+        - 32
+dim_hidden:
+    value: 100
+dim_hidden_list:
+    value:
+        - 32
+        - 32
+        - 32
+experiment-name:
+    value: aan_harmonic_sweep
+experiment_name:
+    value: aan_harmonic_sweep
+k_pair:
+    value: 0.005
+k_wall:
+    value: 0.01
+learn-scale:
+    value: false
+log-every:
+    value: 100
+log_every:
+    value: 100
+lr:
+    value: "1e-4"
+m_max:
+    value: 3
+m_min:
+    value: 1
+mlp-res-connection:
+    value: false
+mlp_res_connection:
+    value: false
+"n":
+    value: 2
+normalize-qp:
+    value: false
+normalize_qp:
+    value: false
+num-gsblocks:
+    value: 20
+num-steps:
+    value: 5000
+num_gsblocks:
+    value: 20
+num_params:
+    value: 8582
+num_steps:
+    value: 5000
+save-dir:
+    value: results/aan_harmonic_sweep
+save-every:
+    value: 500
+save_dir:
+    value: results/aan_harmonic_sweep
+save_every:
+    value: 500
+seed:
+    value: 42
+single_step:
+    value: true
+test-time-jumps:
+    value:
+        - 1
+        - 2
+        - 5
+        - 10
+        - 20
+        - 50
+test_split:
+    value: 0.5
+test_time_jumps:
+    value:
+        - 1
+        - 2
+        - 5
+        - 10
+        - 20
+        - 50
+theta-predictor:
+    value: mlp
+theta_predictor:
+    value: mlp
+train_split:
+    value: 0.1
+type_polar:
+    value: canonical
+wandb-project:
+    value: aan_harmonic_sweep

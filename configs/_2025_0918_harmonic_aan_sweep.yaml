@@ -1,11 +1,11 @@
-project: aan_harmonic_sweep
+project: aan_harmonic_sweep_v2
 program: scripts/s2025_0918_aan_harmonic_motion.py
 method: grid
 
 parameters:
   # 固定値（必要なら CLI 側の既定を上書き）
-  wandb-project: {value: "aan_harmonic_sweep"}
-  experiment-name: {value: "aan_harmonic_sweep"}  
+  wandb-project: {value: "aan_harmonic_sweep_v2"}
+  experiment-name: {value: "aan_harmonic_sweep_v2"}  
   n: {value: 2}
   delta-t: {value: 1.0}
   dim-hidden: {value: 100}
@@ -19,7 +19,6 @@ parameters:
   seed: {value: 42}
   log-every: {value: 100}
   save-every: {value: 500}
-  save-dir: {value: "results/aan_harmonic_sweep"}
   
   # 探索パラメータ
   lr: 

@@ -1,0 +1,66 @@
+Starting training...
+num_steps: 5000, delta_t_max: 10.0, batch_size: 100, log_every: 100
+test_time_jumps: [1, 2, 5, 10, 20, 50]
+alpha (weight for action constancy loss): 0.1
+step     1  train_loss 926.246033  test_loss [jump=1: 613.409912, jump=2: 1001.162109, jump=5: 774.187378, jump=10: 924.214539, jump=20: 987.566162, jump=50: 949.311768]
+step   100  train_loss 95.290245  test_loss [jump=1: 63.199532, jump=2: 167.118835, jump=5: 382.328735, jump=10: 477.974030, jump=20: 495.251587, jump=50: 571.711060]
+step   200  train_loss 42.624245  test_loss [jump=1: 13.707401, jump=2: 43.329811, jump=5: 137.496277, jump=10: 221.991516, jump=20: 299.652771, jump=50: 418.770447]
+step   300  train_loss 26.899069  test_loss [jump=1: 6.227169, jump=2: 21.843735, jump=5: 86.891022, jump=10: 172.161530, jump=20: 239.937347, jump=50: 331.600586]
+step   400  train_loss 19.218172  test_loss [jump=1: 3.369172, jump=2: 12.458954, jump=5: 57.068535, jump=10: 134.392212, jump=20: 199.619385, jump=50: 278.881592]
+step   500  train_loss 14.729619  test_loss [jump=1: 2.034112, jump=2: 7.735922, jump=5: 38.738914, jump=10: 103.399200, jump=20: 174.229187, jump=50: 246.130188]
+[ckpt] saved: results/aan_harmonic_sweep/aan_harmonic_sweep_job860598.opbs/checkpoints/params_step_00500.params
+step   600  train_loss 13.345626  test_loss [jump=1: 1.379502, jump=2: 5.293418, jump=5: 27.423304, jump=10: 78.001694, jump=20: 151.237366, jump=50: 220.224503]
+step   700  train_loss 10.537333  test_loss [jump=1: 0.859274, jump=2: 3.341713, jump=5: 18.114719, jump=10: 54.739586, jump=20: 123.859360, jump=50: 180.619324]
+step   800  train_loss 8.624339  test_loss [jump=1: 0.585071, jump=2: 2.292902, jump=5: 12.790846, jump=10: 40.141716, jump=20: 99.247803, jump=50: 160.846649]
+step   900  train_loss 7.277588  test_loss [jump=1: 0.425796, jump=2: 1.676681, jump=5: 9.553133, jump=10: 30.933167, jump=20: 80.854843, jump=50: 144.697693]
+step  1000  train_loss 6.262741  test_loss [jump=1: 0.323055, jump=2: 1.276405, jump=5: 7.384421, jump=10: 24.523993, jump=20: 66.898315, jump=50: 128.268982]
+[ckpt] saved: results/aan_harmonic_sweep/aan_harmonic_sweep_job860598.opbs/checkpoints/params_step_01000.params
+step  1100  train_loss 5.462659  test_loss [jump=1: 0.250207, jump=2: 0.990132, jump=5: 5.789183, jump=10: 19.624102, jump=20: 55.563469, jump=50: 113.747528]
+step  1200  train_loss 4.775709  test_loss [jump=1: 0.190397, jump=2: 0.753565, jump=5: 4.429500, jump=10: 15.229530, jump=20: 44.184486, jump=50: 97.236008]
+step  1300  train_loss 4.461731  test_loss [jump=1: 0.143827, jump=2: 0.569744, jump=5: 3.371176, jump=10: 11.775690, jump=20: 35.320934, jump=50: 85.454826]
+step  1400  train_loss 3.952752  test_loss [jump=1: 0.110390, jump=2: 0.437502, jump=5: 2.601259, jump=10: 9.214441, jump=20: 28.478123, jump=50: 75.401093]
+step  1500  train_loss 3.258782  test_loss [jump=1: 0.086357, jump=2: 0.342359, jump=5: 2.042761, jump=10: 7.309860, jump=20: 23.162069, jump=50: 66.278755]
+[ckpt] saved: results/aan_harmonic_sweep/aan_harmonic_sweep_job860598.opbs/checkpoints/params_step_01500.params
+step  1600  train_loss 2.951466  test_loss [jump=1: 0.068949, jump=2: 0.273397, jump=5: 1.634516, jump=10: 5.885978, jump=20: 19.047001, jump=50: 58.091827]
+step  1700  train_loss 2.684178  test_loss [jump=1: 0.054387, jump=2: 0.215660, jump=5: 1.291314, jump=10: 4.677021, jump=20: 15.378124, jump=50: 49.274002]
+step  1800  train_loss 2.515201  test_loss [jump=1: 0.042863, jump=2: 0.169976, jump=5: 1.017814, jump=10: 3.695662, jump=20: 12.336179, jump=50: 41.134354]
+step  1900  train_loss 2.379337  test_loss [jump=1: 0.033716, jump=2: 0.133886, jump=5: 0.802977, jump=10: 2.932307, jump=20: 9.974722, jump=50: 34.369865]
+step  2000  train_loss 2.178879  test_loss [jump=1: 0.027667, jump=2: 0.109847, jump=5: 0.658350, jump=10: 2.395612, jump=20: 8.193744, jump=50: 28.704777]
+[ckpt] saved: results/aan_harmonic_sweep/aan_harmonic_sweep_job860598.opbs/checkpoints/params_step_02000.params
+step  2100  train_loss 1.890354  test_loss [jump=1: 0.022616, jump=2: 0.089825, jump=5: 0.538896, jump=10: 1.963526, jump=20: 6.797573, jump=50: 24.193296]
+step  2200  train_loss 1.846835  test_loss [jump=1: 0.019079, jump=2: 0.075795, jump=5: 0.455562, jump=10: 1.661796, jump=20: 5.797108, jump=50: 20.658779]
+step  2300  train_loss 1.852154  test_loss [jump=1: 0.016312, jump=2: 0.064807, jump=5: 0.389528, jump=10: 1.416472, jump=20: 4.936814, jump=50: 17.373035]
+step  2400  train_loss 1.640468  test_loss [jump=1: 0.014300, jump=2: 0.056833, jump=5: 0.341075, jump=10: 1.233840, jump=20: 4.275157, jump=50: 14.774769]
+step  2500  train_loss 1.523051  test_loss [jump=1: 0.012671, jump=2: 0.050402, jump=5: 0.303472, jump=10: 1.101368, jump=20: 3.842922, jump=50: 13.074427]
+[ckpt] saved: results/aan_harmonic_sweep/aan_harmonic_sweep_job860598.opbs/checkpoints/params_step_02500.params
+step  2600  train_loss 1.416543  test_loss [jump=1: 0.011566, jump=2: 0.045967, jump=5: 0.277213, jump=10: 1.006052, jump=20: 3.512275, jump=50: 11.785336]
+step  2700  train_loss 1.231089  test_loss [jump=1: 0.010753, jump=2: 0.042800, jump=5: 0.258264, jump=10: 0.937583, jump=20: 3.268815, jump=50: 10.797069]
+step  2800  train_loss 1.148827  test_loss [jump=1: 0.010279, jump=2: 0.040943, jump=5: 0.247111, jump=10: 0.897471, jump=20: 3.127821, jump=50: 10.328241]
+step  2900  train_loss 1.157029  test_loss [jump=1: 0.010076, jump=2: 0.040031, jump=5: 0.241043, jump=10: 0.870666, jump=20: 3.004597, jump=50: 9.988980]
+step  3000  train_loss 1.199258  test_loss [jump=1: 0.009807, jump=2: 0.038952, jump=5: 0.234549, jump=10: 0.848337, jump=20: 2.937118, jump=50: 9.919728]
+[ckpt] saved: results/aan_harmonic_sweep/aan_harmonic_sweep_job860598.opbs/checkpoints/params_step_03000.params
+step  3100  train_loss 1.130918  test_loss [jump=1: 0.009529, jump=2: 0.037860, jump=5: 0.228456, jump=10: 0.832094, jump=20: 2.915205, jump=50: 10.058274]
+step  3200  train_loss 0.858047  test_loss [jump=1: 0.009368, jump=2: 0.037237, jump=5: 0.224990, jump=10: 0.824139, jump=20: 2.924848, jump=50: 10.373943]
+step  3300  train_loss 0.951264  test_loss [jump=1: 0.009390, jump=2: 0.037301, jump=5: 0.225257, jump=10: 0.827118, jump=20: 2.956986, jump=50: 10.772878]
+step  3400  train_loss 0.778739  test_loss [jump=1: 0.009388, jump=2: 0.037247, jump=5: 0.224402, jump=10: 0.824463, jump=20: 2.957976, jump=50: 10.977036]
+step  3500  train_loss 0.764067  test_loss [jump=1: 0.009599, jump=2: 0.038043, jump=5: 0.228426, jump=10: 0.838058, jump=20: 3.005841, jump=50: 11.330971]
+[ckpt] saved: results/aan_harmonic_sweep/aan_harmonic_sweep_job860598.opbs/checkpoints/params_step_03500.params
+step  3600  train_loss 0.805320  test_loss [jump=1: 0.009333, jump=2: 0.037033, jump=5: 0.223983, jump=10: 0.836140, jump=20: 3.099068, jump=50: 11.896112]
+step  3700  train_loss 0.717868  test_loss [jump=1: 0.009453, jump=2: 0.037433, jump=5: 0.225616, jump=10: 0.840543, jump=20: 3.110268, jump=50: 11.965307]
+step  3800  train_loss 0.642718  test_loss [jump=1: 0.009474, jump=2: 0.037481, jump=5: 0.225493, jump=10: 0.840557, jump=20: 3.120584, jump=50: 11.996050]
+step  3900  train_loss 0.740232  test_loss [jump=1: 0.009652, jump=2: 0.038138, jump=5: 0.228299, jump=10: 0.847628, jump=20: 3.138790, jump=50: 12.069670]
+step  4000  train_loss 0.654926  test_loss [jump=1: 0.009592, jump=2: 0.037955, jump=5: 0.229882, jump=10: 0.876969, jump=20: 3.416121, jump=50: 13.227635]
+[ckpt] saved: results/aan_harmonic_sweep/aan_harmonic_sweep_job860598.opbs/checkpoints/params_step_04000.params
+step  4100  train_loss 0.730462  test_loss [jump=1: 0.009974, jump=2: 0.039327, jump=5: 0.235617, jump=10: 0.887914, jump=20: 3.426501, jump=50: 13.104436]
+step  4200  train_loss 0.643615  test_loss [jump=1: 0.009812, jump=2: 0.038794, jump=5: 0.234086, jump=10: 0.899164, jump=20: 3.593898, jump=50: 13.622435]
+step  4300  train_loss 0.567147  test_loss [jump=1: 0.010281, jump=2: 0.040511, jump=5: 0.241875, jump=10: 0.917740, jump=20: 3.629346, jump=50: 13.529728]
+step  4400  train_loss 0.420901  test_loss [jump=1: 0.010354, jump=2: 0.040735, jump=5: 0.243478, jump=10: 0.931084, jump=20: 3.753762, jump=50: 13.702301]
+step  4500  train_loss 0.564590  test_loss [jump=1: 0.010492, jump=2: 0.041231, jump=5: 0.245692, jump=10: 0.939791, jump=20: 3.808860, jump=50: 13.532263]
+[ckpt] saved: results/aan_harmonic_sweep/aan_harmonic_sweep_job860598.opbs/checkpoints/params_step_04500.params
+step  4600  train_loss 0.659753  test_loss [jump=1: 0.010533, jump=2: 0.041432, jump=5: 0.247855, jump=10: 0.960387, jump=20: 3.994251, jump=50: 13.928978]
+step  4700  train_loss 0.472729  test_loss [jump=1: 0.011106, jump=2: 0.043460, jump=5: 0.255764, jump=10: 0.970472, jump=20: 3.981281, jump=50: 13.310398]
+step  4800  train_loss 0.498705  test_loss [jump=1: 0.010975, jump=2: 0.042928, jump=5: 0.253296, jump=10: 0.971513, jump=20: 4.072030, jump=50: 13.194633]
+step  4900  train_loss 0.592007  test_loss [jump=1: 0.011226, jump=2: 0.043797, jump=5: 0.256458, jump=10: 0.978979, jump=20: 4.113994, jump=50: 12.700388]
+step  5000  train_loss 0.571121  test_loss [jump=1: 0.011324, jump=2: 0.044131, jump=5: 0.258223, jump=10: 0.990543, jump=20: 4.239213, jump=50: 12.880505]
+[ckpt] saved: results/aan_harmonic_sweep/aan_harmonic_sweep_job860598.opbs/checkpoints/params_step_05000.params
+Training completed.

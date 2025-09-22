@@ -10,7 +10,7 @@ import flax.linen as nn
 import matplotlib.pyplot as plt
 import optax
 
-from typing import Any, Callable, Sequence, Optional, List, Tuple
+from typing import Any, Callable, Sequence, Optional, List, Tuple, Dict
 from pathlib import Path
 
 import time
@@ -31,7 +31,6 @@ from action_angle_networks.sk_models import MyActionAngleNetwork
 # %config InlineBackend.figure_format = 'retina'
 # logging.set_verbosity(logging.INFO)
 from dataclasses import dataclass
-from typing import Optional, Tuple, Dict
 import ast
 
 ## Helper functions
@@ -383,8 +382,6 @@ def main():
             'num_params': num_params,
             'seed': args.seed
         }
-
-
 
         job_id = os.environ.get("PBS_JOBID") or os.environ.get("PJM_JOBID") or "local"
         if args.wandb_run_name is not None:

@@ -31,7 +31,7 @@ singularity exec --nv \
   --bind $(pwd):/workspace \
   --bind /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt \
   ~/singularity/kamiya_wisteria.sif \
-  python scripts/e2025_0918_aan_harmonic_motion.py \
+  python scripts/s2025_0918_aan_harmonic_motion.py \
     --wandb-project aan_harmonic \
     --experiment-name aan_harmonic \
     --n 2 \

@@ -126,3 +126,45 @@ class MyActionAngleNetwork(nn.Module):
         #     p_ = p_ * std_p + mean_p
 
         return q_, p_, I, theta
+
+    def _scale_qp(self, q, p):
+        if self.learn_scale:
+            q_scale = self.scale_q / jnp.sqrt(self.scale_q * self.scale_p)
+            p_scale = self.scale_p / jnp.sqrt(self.scale_q * self.scale_p)
+        else:
+            q_scale = 1.0
+            p_scale = 1.0
+        q_s = q * q_scale
+        p_s = p * p_scale
+        return q_s, p_s, q_scale, p_scale
+
+    # --- (q,p) → I を取り出すだけのヘルパ ---
+    def get_actions(self, q, p):
+        """q,p:(B,n) → I:(B,n) を返す（GSymp→極座標まで辿る）。"""
+        q_s, p_s, *_ = self._scale_qp(q, p)
+        Ix, Iy = self.gsymp_net(q_s, p_s)
+        I, _theta = self.to_polar(Ix, Iy)
+        return I
+
+    # --- H(I) を直接計算（batched I を受け取り (B,) を返す）---
+    def h_of_I(self, I):
+        if not hasattr(self, "H_of_I"):
+            raise ValueError("theta_predictor='gradient' のときだけ H_of_I が定義されます。")
+        H = self.H_of_I(I)            # (B,1)
+        return H.squeeze(-1)          # (B,)
+
+    # --- (q,p) から H を推定（あなたの learned_hamiltonian 相当）---
+    def hamiltonian(self, q, p):
+        """(B,n),(B,n) → (B,)"""
+        I = self.get_actions(q, p)
+        return self.h_of_I(I)
+
+    # --- 角速度 ω = ∂H/∂I（= dH/dI）を返す（必要なら）---
+    def omega(self, q, p):
+        """(B,n),(B,n) → (B,n), with ω_i = ∂H/∂I_i"""
+        I = self.get_actions(q, p)
+        # batched 勾配を安全に取る：合計にしてから grad
+        def h_sum(I_):
+            return self.h_of_I(I_).sum()
+        dH_dI = jax.grad(h_sum)(I)    # (B,n)
+        return dH_dI

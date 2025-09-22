@@ -26,7 +26,7 @@ TODAY=$(date '+%Y%m%d')
 singularity exec --nv \
   --bind $(pwd):/workspace \
   ~/singularity/pytorch_25.01.sif \
-  python scripts/e2025_0918_aan_harmonic_motion.py \
+  python scripts/s2025_0918_aan_harmonic_motion.py \
     --wandb-project aan_harmonic \
     --experiment-name aan_harmonic \
     --n 2 \
@@ -36,11 +36,11 @@ singularity exec --nv \
     --num-gsblocks 20 \
     --activation sigmoid \
     --theta-predictor gradient \
-    --mlp-res-connection True \
+    --mlp-res-connection False \
     --dim-hidden 64 \
-    --dim-hidden-list 32 32 32 \
+    --dim-hidden-list "[32, 32, 32]" \
     --num-steps 5000 \
-    --test-time-jumps 1 2 5 10 20 50 \
+    --test-time-jumps "[1, 2, 5, 10, 20, 50]" \
     --alpha 0.1 \
     --normalize-qp False \
     --learn-scale True \
