@@ -13,6 +13,6 @@ rename.py
 data/
 *.egg-info/
 logs/
-/results/*
-!/results/aan_harmonic/p9511dx
+results/*
+!aan_harmonic/p9511dx
 /wandb/
