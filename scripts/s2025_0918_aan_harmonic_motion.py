@@ -175,6 +175,35 @@ def train_step(params, opt_state, x, y, delta_t, alpha, *, apply_fn, tx):
 
 train_step_jit = jax.jit(train_step, static_argnames=('apply_fn','tx'))
 
+# jit対象: 配列系だけを引数に。apply_fn は static にする
+def train_step_ss_loss(params, opt_state, x, y, delta_t, alpha, *, apply_fn, tx):
+    T = x.shape[0]
+    n = x.shape[1] // 2
+    q, p = x[:, :n], x[:, n:]  # (B, n), (B, n)
+    def loss_fn(pp):
+        q_, p_, I, _ = apply_fn({'params': pp}, q, p, delta_t, train=True)#, rngs={'noise': key})
+        #x_ = jnp.concatenate([q_, p_], axis=-1)
+        # q_, p_: (B, n), (B, n)
+        # I: (B, n) actions
+        
+        # prediction loss
+        loss_q_se = ((q_ - y[:, :n]) ** 2).mean()#.sum()#
+        loss_p_se = ((p_ - y[:, n:]) ** 2).mean()#.sum()#
+
+        # loss_q_se /= (1./(1.+delta_t))
+        # loss_p_se /= (1./(1.+delta_t))
+
+        # actions should be constant
+        loss_action = jnp.var(I, axis=0).sum()
+
+        return loss_q_se + loss_p_se + alpha * loss_action
+    loss, grads = value_and_grad(loss_fn)(params)
+    updates, opt_state = tx.update(grads, opt_state, params)
+    params = optax.apply_updates(params, updates)
+    return params, opt_state, loss
+
+train_step_jit = jax.jit(train_step, static_argnames=('apply_fn','tx'))
+
 # @jit
 # def train_step(model, params, opt_state, x, y, delta_t, alpha, key):
 #     # x: (B, 2n) current (q, p)

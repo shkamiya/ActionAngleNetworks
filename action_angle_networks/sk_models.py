@@ -92,9 +92,14 @@ class MyActionAngleNetwork(nn.Module):
         I, theta = self.to_polar(Ix, Iy)
         # I, theta: (B, n)
 
+        # align delta_t shape
+        if jnp.ndim(delta_t) == 0:
+            delta_t = jnp.broadcast_to(delta_t, (q.shape[0],))
+            # delta_t = jnp.full((q.shape[0],), delta_t)
+
         # I_ = I as I should be constant, only renew theta
         if self.theta_predictor == "mlp":
-            theta_ = theta + delta_t * self.theta_generator(I)
+            theta_ = theta + delta_t[:, None] * self.theta_generator(I)
         elif self.theta_predictor == "gradient":
             def hamil_sum_and_hamil(II):
                 HH = self.H_of_I(II)   # (B,)
@@ -106,7 +111,7 @@ class MyActionAngleNetwork(nn.Module):
             # def H_scalar(II):
             #     return self.H_of_I(II[None, :]).squeeze() # (n,)→scalar
             # omega = jax.vmap(jax.grad(H_scalar))(I)
-            theta_ = theta + delta_t * grad_hamil
+            theta_ = theta + delta_t[:, None] * grad_hamil
 
         #theta_ = theta + delta_t * self.theta_generator(I)
         # theta_: (B, n)
