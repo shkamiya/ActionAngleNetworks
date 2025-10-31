@@ -15,16 +15,17 @@ class GSBlock(nn.Module):
                                     (self.dim_hidden, self.dim_config))
         self.B_bias = self.param("B_bias", nn.initializers.zeros, (self.dim_hidden,))
         self.A_diag = self.param("A_diag", nn.initializers.ones, (self.dim_hidden,))
-        C_tmp = self.param("C_tmp", nn.initializers.zeros, (self.dim_config, self.dim_config))
-        self.C_sym = (C_tmp + C_tmp.T) / 2.0  # 対称化
+        self.C_tmp = self.param("C_tmp", nn.initializers.zeros, (self.dim_config, self.dim_config))
+        # self.C_sym = (C_tmp + C_tmp.T) / 2.0  # 対称化
+        # ここで大正化するとパラメータ固定されて学習進まない
 
     @nn.compact
     def __call__(self, x):
         # x: (B, dim_config)
         y = self.activation(x @ self.W_affine.T + self.B_bias) # (B, dim_hidden)
         z = (y * self.A_diag) @ self.W_affine
-        
-        return z + x @ self.C_sym # (B, dim_config)
+        C_sym = (self.C_tmp + self.C_tmp.T) / 2.0
+        return z + x @ C_sym # (B, dim_config)
 
 class GSympNet(nn.Module):
     dim_config: int # dimenion of configuration space

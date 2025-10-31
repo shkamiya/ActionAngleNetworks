@@ -79,10 +79,11 @@ class MyActionAngleNetwork(nn.Module):
         #     p = (p - mean_p) / std_p
 
         # scale q, p
-        q_scale= self.scale_q / jnp.sqrt( self.scale_q * self.scale_p )
-        p_scale = self.scale_p / jnp.sqrt( self.scale_q * self.scale_p )
-        q = q * q_scale[None,...]
-        p = p * p_scale[None,...]
+        q, p, q_scale, p_scale = self._scale_qp(q, p)
+        # q_scale= self.scale_q / jnp.sqrt( self.scale_q * self.scale_p )
+        # p_scale = self.scale_p / jnp.sqrt( self.scale_q * self.scale_p )
+        # q = q * q_scale[None,...]
+        # p = p * p_scale[None,...]
 
         # (q, p) -> (Ix, Iy)
         Ix, Iy = self.gsymp_net(q, p)
@@ -123,8 +124,11 @@ class MyActionAngleNetwork(nn.Module):
         Ix_, Iy_ = self.inv_polar(I, theta_)
         q_, p_ = self.gsymp_net.inverse(Ix_, Iy_)
 
-        q_ = q_ * 1./q_scale[None,...]
-        p_ = p_ * 1./p_scale[None,...]
+        q_ = q_ * (1./q_scale)
+        p_ = p_ * (1./p_scale)
+        
+        # q_ = q_ * 1./q_scale[None,...]
+        # p_ = p_ * 1./p_scale[None,...]
 
         # if self.normalize_qp:
         #     q_ = q_ * std_q + mean_q
