@@ -89,44 +89,70 @@ class MyActionAngleNetwork(nn.Module):
         Ix, Iy = self.gsymp_net(q, p)
         # Ix, Iy: (B, n)
 
-        # (Ix, Iy) -> (I, theta)
-        I, theta = self.to_polar(Ix, Iy)
-        # I, theta: (B, n)
-
         # align delta_t shape
         if jnp.ndim(delta_t) == 0:
             delta_t = jnp.broadcast_to(delta_t, (q.shape[0],))
             # delta_t = jnp.full((q.shape[0],), delta_t)
 
-        # I_ = I as I should be constant, only renew theta
-        if self.theta_predictor == "mlp":
-            theta_ = theta + delta_t[:, None] * self.theta_generator(I)
-        elif self.theta_predictor == "gradient":
-            def hamil_sum_and_hamil(II):
-                HH = self.H_of_I(II)   # (B,)
-                return HH.sum(), HH
-             # Here, you can do ".sum()" as long as batches do not mix.
-            
-            grad_hamil, hamil = jax.grad(hamil_sum_and_hamil, has_aux=True)(I)
+        if 0:
+            # (Ix, Iy) -> (I, theta)
+            I, theta = self.to_polar(Ix, Iy)
+            # I, theta: (B, n)
 
-            # def H_scalar(II):
-            #     return self.H_of_I(II[None, :]).squeeze() # (n,)→scalar
-            # omega = jax.vmap(jax.grad(H_scalar))(I)
-            theta_ = theta + delta_t[:, None] * grad_hamil
+            # I_ = I as I should be constant, only renew theta
+            if self.theta_predictor == "mlp":
+                theta_ = theta + delta_t[:, None] * self.theta_generator(I)
+            elif self.theta_predictor == "gradient":
+                def hamil_sum_and_hamil(II):
+                    HH = self.H_of_I(II)   # (B,)
+                    return HH.sum(), HH
+                # Here, you can do ".sum()" as long as batches do not mix.
+                
+                grad_hamil, hamil = jax.grad(hamil_sum_and_hamil, has_aux=True)(I)
 
-        #theta_ = theta + delta_t * self.theta_generator(I)
-        # theta_: (B, n)
+                # def H_scalar(II):
+                #     return self.H_of_I(II[None, :]).squeeze() # (n,)→scalar
+                # omega = jax.vmap(jax.grad(H_scalar))(I)
+                theta_ = theta + delta_t[:, None] * grad_hamil
 
-        # wrap theta to [-pi, pi]
-        theta_ = (theta_ + jnp.pi) % (2 * jnp.pi) - jnp.pi
+            #theta_ = theta + delta_t * self.theta_generator(I)
+            # theta_: (B, n)
 
-        # inverse from future: (Ix_, Iy_) -> (q_, p_)
-        Ix_, Iy_ = self.inv_polar(I, theta_)
+            # wrap theta to [-pi, pi]
+            theta_ = (theta_ + jnp.pi) % (2 * jnp.pi) - jnp.pi
+
+            # inverse from future: (Ix_, Iy_) -> (q_, p_)
+            Ix_, Iy_ = self.inv_polar(I, theta_)
+        else:
+            if self.theta_predictor == "gradient":
+                def hamil_sum_and_hamil(II):
+                    HH = self.H_of_I(II)   # (B,)
+                    return HH.sum(), HH
+                # Here, you can do ".sum()" as long as batches do not mix.
+
+                I = 0.5 * (Ix**2 + Iy**2)
+                grad_hamil, hamil = jax.grad(hamil_sum_and_hamil, has_aux=True)(I) # (B,n)
+
+                Delta_theta = delta_t[:, None] * grad_hamil # (B,n)
+                c = jnp.cos(Delta_theta)
+                s = jnp.sin(Delta_theta)
+                Ix_ = Ix * c - Iy * s
+                Iy_ = Ix * s + Iy * c
+
+                # rot = jnp.concatenate( [jnp.cos(Delta_theta)[..., None], -jnp.sin(Delta_theta)[..., None],
+                #                   jnp.sin(Delta_theta)[..., None],  jnp.cos(Delta_theta)[..., None]], axis=-1 ) # (B,n,4)
+                # rot = rot.reshape(-1, self.dim_config, 2, 2) # (B,n,2,2)
+                # Ixy = jnp.concat( [Ix[..., None], Iy[..., None]], axis=-1 ) # (B,n,2)
+                # Ixy_ = jnp.einsum('bnij, bnj -> bni', rot, Ixy) # (B,n,2)
+                # # Ixy_ = jnp.einsum('bni, bnij -> bnj', Ixy, rot) # (B,n,2)
+                # Ix_ = Ixy_[...,0]
+                # Iy_ = Ixy_[...,1]
+
         q_, p_ = self.gsymp_net.inverse(Ix_, Iy_)
 
         q_ = q_ * (1./q_scale)
         p_ = p_ * (1./p_scale)
-        
+
         # q_ = q_ * 1./q_scale[None,...]
         # p_ = p_ * 1./p_scale[None,...]
 
