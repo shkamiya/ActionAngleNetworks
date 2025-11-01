@@ -160,7 +160,8 @@ class MyActionAngleNetwork(nn.Module):
         #     q_ = q_ * std_q + mean_q
         #     p_ = p_ * std_p + mean_p
 
-        return q_, p_, I, theta
+        return q_, p_, I, None
+        #return q_, p_, I, theta
 
     def _scale_qp(self, q, p):
         if self.learn_scale:
