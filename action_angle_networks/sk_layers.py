@@ -122,7 +122,7 @@ class MLP(nn.Module):
         return y if self.res_connection == False else y + x
 
 class MLPFlexible(nn.Module):
-    dim_input: int
+    #dim_input: int
     dim_hidden_list: Sequence[int] # list of hidden dimensions
     dim_output: Optional[int] = None
     activation: Callable = nn.relu

@@ -50,7 +50,7 @@ class MyActionAngleNetwork(nn.Module):
         elif self.theta_predictor == "gradient":
             dim_hidden_list = [self.dim_hidden, self.dim_hidden] if self.dim_hidden_list is None else self.dim_hidden_list
             self.H_of_I = MLPFlexible(
-                dim_input=self.dim_config,
+                #dim_input=self.dim_config,
                 dim_output=1, # output scalar Hamiltonian
                 dim_hidden_list=dim_hidden_list,
                 activation=self.activation,
