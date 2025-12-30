@@ -1,0 +1,85 @@
+#!/bin/bash
+#PJM -L rscgrp=short-a
+#PJM -L elapse=02:00:00
+#PJM -L node=1
+#PJM -g gb20
+#PJM -N aan_kepler
+#PJM -o logs/aan_kepler_%j.out
+#PJM -j
+#PJM -L jobenv=singularity
+
+
+module purge
+module load singularity
+
+cd /work/gb20/b20109/ActionAngleNetworks
+
+export REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.crt
+TODAY=$(date '+%Y%m%d')
+
+# --- ログディレクトリ作成 ---
+mkdir -p logs
+
+echo "Starting AAN Kepler training..."
+echo "Job started at: $(date)"
+
+# --- Training実行 ---
+singularity exec --nv \
+  --bind $(pwd):/workspace \
+  --bind /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt \
+  ~/singularity/kamiya_wisteria.sif \
+  python scripts/s2025_1230_hhn_kepler.py \
+    --n 2 \
+    --dt 0.01 \
+    --num-train 5000 \
+    --num-test 5000 \
+    --delta-t-max 0.5 \
+    --train-dist LNP \
+    --test-steps 1 2 5 10 20 50 \
+    --mass 1.0 \
+    --k 1.0 \
+    --eps 1e-8 \
+    --dim-hidden 128 \
+    --dim-hidden-list 32 128 32 \
+    --num-gsblocks 30 \
+    --type-polar canonical \
+    --activation silu \
+    --theta-predictor gradient \
+    --mlp-res-connection False \
+    --learn-scale True \
+    --epochs 200 \
+    --batch-size 256 \
+    --lr 0.001 \
+    --log-every 50 \
+    --w-q 1.0 \
+    --w-p 1.0 \
+    --w-action 0.0 \
+    --w-hnn 0.0 \
+    --action-loss-type var \
+    --mass-seed 42 \
+    --model-seed 0 \
+    --train-seed 201 \
+    --run-diagnostics True \
+    --num-diag-samples 100 \
+    --num-diag-steps 100
+
+STATUS=$?   # 0=正常, それ以外=異常
+
+# ---- Slack 通知 ----
+
+JOB_NAME=$PBS_JOB_NAME
+JOB_ID=$PBS_JOBID
+NODE_NAME=$(hostname)
+
+send_slack() {         # 小さなヘルパー関数
+  curl -s -X POST -H 'Content-type: application/json' \
+       --data "{\"text\":\"$1\"}" "$SLACK_WEBHOOK"
+}
+
+if [ "$STATUS" -eq 0 ]; then
+    MESSAGE="✅ *AAN Kepler Training Finished Successfully*\n> Job Name: \`$JOB_NAME\`\n> Job ID: \`$JOB_ID\`\n> Node: \`$NODE_NAME\`\n> Date: \`$TODAY\`"
+    send_slack "$MESSAGE"
+else
+    MESSAGE="❌ *AAN Kepler Training Failed*\n> Job Name: \`$JOB_NAME\`\n> Job ID: \`$JOB_ID\`\n> Node: \`$NODE_NAME\`\n> Date: \`$TODAY\`\n> Exit Code: \`$STATUS\`"
+    send_slack "$MESSAGE"
+fi
