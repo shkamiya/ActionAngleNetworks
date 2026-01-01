@@ -17,6 +17,9 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from typing import Tuple, List
+from pathlib import Path
+import datetime
+import sys
 
 import numpy as np
 import jax
@@ -24,10 +27,24 @@ from jax import lax, random, value_and_grad
 import jax.numpy as jnp
 import optax
 
+# Ensure project root is on PYTHONPATH when running as a script.
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 from action_angle_networks.sk_models import MyActionAngleNetwork
 
 import wandb
 import os
+from flax import serialization
+
+
+def _atomic_save(path: Path, params) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with open(tmp, "wb") as f:
+        f.write(serialization.to_bytes(params))
+    os.replace(tmp, path)  # atomic
 
 # ------------------------- CLI helpers -------------------------
 
@@ -433,7 +450,13 @@ def train_model(
         cfg: TrainConfig,
         model: MyActionAngleNetwork,
         train_dataset,
-        test_dataset
+        test_dataset,
+        step_counts_test,
+        *,
+        log_every: int,
+        save_every: int,
+        save_dir: Path,
+        run=None,
     ):
     """Train the model."""
     train_step_jit = build_train_step(model)
@@ -447,6 +470,26 @@ def train_model(
     x0_train, x0_dot_train, xt_train, t_train = train_dataset
     num_batches = x0_train.shape[0] // cfg.batch_size
     key = jax.random.PRNGKey(cfg.train_seed)
+
+    def _eval_test_loss_by_jump(pp):
+        x_test, _x_dot_test, y_test, delta_t_test = test_dataset
+        steps_np = np.asarray(step_counts_test)
+        unique_steps = np.unique(steps_np)
+        out = {}
+        for step in unique_steps:
+            idx_np = np.nonzero(steps_np == step)[0]
+            if idx_np.size == 0:
+                out[int(step)] = float("nan")
+                continue
+            losses = []
+            for start in range(0, idx_np.size, cfg.batch_size):
+                idx = jnp.asarray(idx_np[start:start + cfg.batch_size], dtype=jnp.int32)
+                xb = jnp.take(x_test, idx, axis=0)
+                yb = jnp.take(y_test, idx, axis=0)
+                dtb = jnp.take(delta_t_test, idx, axis=0)
+                losses.append(float(eval_batch(pp, xb, yb, dtb)))
+            out[int(step)] = float(np.mean(losses)) if losses else float("nan")
+        return out
 
     for ep in range(cfg.epochs):
         perm_key, key = jax.random.split(jax.random.fold_in(key, ep))
@@ -472,28 +515,34 @@ def train_model(
             epoch_loss += float(batch_loss)
 
             global_step = ep * num_batches + i + 1
-            if global_step % cfg.log_every == 0 or (ep == cfg.epochs - 1 and i == num_batches - 1):
-                # quick eval
-                num_test_batches = test_dataset[0].shape[0] // cfg.batch_size
-                test_losses = []
-                for j in range(num_test_batches):
-                    slt = slice(j * cfg.batch_size, (j + 1) * cfg.batch_size)
-                    test_losses.append(float(eval_batch(
-                        params,
-                        test_dataset[0][slt],
-                        test_dataset[2][slt],
-                        test_dataset[3][slt],
-                        #apply_fn=model.apply,
-                    )))
-                if test_losses:
-                    print(f"[step {global_step:05d}] eval_loss={sum(test_losses)/len(test_losses):.6f}")
-                
-                if not args.no_wandb:
-                    for j, l in zip(args.test_time_jumps, test_loss_list):
-                        wandb.log({
-                            f'test/loss_jump_{j}': float(l),
-                            'train/step': global_step,
-                        }, step=global_step)
+            if run is not None:
+                wandb.log(
+                    {
+                        "train/loss": float(batch_loss),
+                        "train/epoch": ep + 1,
+                        "train/batch": i + 1,
+                        "train/step": global_step,
+                    },
+                    step=global_step,
+                )
+
+            if global_step % log_every == 0 or (ep == cfg.epochs - 1 and i == num_batches - 1):
+                test_loss_by_jump = _eval_test_loss_by_jump(params)
+                test_str = ", ".join(f"jump={j}: {l:.6f}" for j, l in sorted(test_loss_by_jump.items()))
+                print(f"[step {global_step:05d}] test_loss [{test_str}]")
+
+                if run is not None:
+                    wandb.log(
+                        {f"test/loss_jump_{j}": float(l) for j, l in test_loss_by_jump.items()},
+                        step=global_step,
+                    )
+
+            if save_every > 0 and (global_step % save_every == 0 or (ep == cfg.epochs - 1 and i == num_batches - 1)):
+                ckpt_path = save_dir / "checkpoints" / f"params_step_{global_step:05d}.params"
+                _atomic_save(ckpt_path, params)
+                print(f"[ckpt] saved: {ckpt_path}")
+                if run is not None:
+                    wandb.save(str(ckpt_path), base_path=str(save_dir))
 
 
         epoch_loss /= max(1, x0_train.shape[0])
@@ -674,6 +723,10 @@ def build_argparser():
     p.add_argument('--num-diag-samples', type=int, default=100, help='Number of samples for diagnostics')
     p.add_argument('--num-diag-steps', type=int, default=100, help='Number of steps for action-angle diagnostics')
 
+    # saving
+    p.add_argument('--save-every', type=int, default=500, help='Checkpoint period in training steps (0 disables)')
+    p.add_argument('--save-dir', type=str, default=None, help='Base directory to save results/checkpoints')
+
     return p
 
 
@@ -744,6 +797,7 @@ def main():
 
 
     # wandb
+    job_id = os.environ.get("PBS_JOBID") or os.environ.get("PJM_JOBID") or "local"
     if not args.no_wandb:
         wandb_config = {
             'experiment_name': args.experiment_name,
@@ -782,7 +836,6 @@ def main():
             'train_seed': args.train_seed,
         }
 
-        job_id = os.environ.get("PBS_JOBID") or os.environ.get("PJM_JOBID") or "local"
         if args.wandb_run_name is not None:
             wandb_run_name = args.wandb_run_name.format(**vars(args), job_id=job_id)
         else:
@@ -808,9 +861,11 @@ def main():
         if args.save_dir is None:
             current_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
             args.save_dir = f"./results/{args.experiment_name}_{current_time}"
-    jobdir = args.save_dir
+    jobdir = Path(args.save_dir) / f"{args.experiment_name}_job{job_id}"
 
     os.makedirs(jobdir, exist_ok=True)
+    if run is not None:
+        wandb.config.update({"jobdir": str(jobdir)}, allow_val_change=True)
 
     # data
     print("Building datasets...")
@@ -818,7 +873,17 @@ def main():
 
     # train
     print("\nTraining model...")
-    learned_params = train_model(cfg, model, train_dataset, test_dataset)
+    learned_params = train_model(
+        cfg,
+        model,
+        train_dataset,
+        test_dataset,
+        step_counts_test,
+        log_every=args.log_every,
+        save_every=args.save_every,
+        save_dir=jobdir,
+        run=run,
+    )
 
     # eval
     print("\nEvaluating RMSE by prediction horizon...")
@@ -826,6 +891,11 @@ def main():
     print("\nRMSE by prediction horizon (steps):")
     for step, q_rmse, p_rmse in rmse_table:
         print(f"  {step:2d}-step -> q RMSE={q_rmse:.4e}, p RMSE={p_rmse:.4e}")
+    if run is not None:
+        wandb.log(
+            {f"final/rmse_q_jump_{step}": q_rmse for step, q_rmse, _ in rmse_table}
+            | {f"final/rmse_p_jump_{step}": p_rmse for step, _, p_rmse in rmse_table},
+        )
 
     # diagnostics
     if args.run_diagnostics:
@@ -853,6 +923,8 @@ def main():
         print("\n" + "=" * 60)
         print("Diagnostics complete!")
         print("=" * 60)
+    if run is not None:
+        wandb.finish()
 
 
 if __name__ == "__main__":
