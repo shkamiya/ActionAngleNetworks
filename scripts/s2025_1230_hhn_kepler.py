@@ -26,6 +26,8 @@ import optax
 
 from action_angle_networks.sk_models import MyActionAngleNetwork
 
+import wandb
+import os
 
 # ------------------------- CLI helpers -------------------------
 
@@ -427,7 +429,12 @@ def make_eval_batch(apply_fn):
         return loss_q_se + loss_p_se
     return _eval_batch
 
-def train_model(cfg: TrainConfig, model: MyActionAngleNetwork, train_dataset, test_dataset):
+def train_model(
+        cfg: TrainConfig,
+        model: MyActionAngleNetwork,
+        train_dataset,
+        test_dataset
+    ):
     """Train the model."""
     train_step_jit = build_train_step(model)
     variables = model.init(jax.random.PRNGKey(cfg.model_seed), jnp.zeros((1, cfg.n)), jnp.zeros((1, cfg.n)), jnp.asarray(cfg.dt))
@@ -480,6 +487,14 @@ def train_model(cfg: TrainConfig, model: MyActionAngleNetwork, train_dataset, te
                     )))
                 if test_losses:
                     print(f"[step {global_step:05d}] eval_loss={sum(test_losses)/len(test_losses):.6f}")
+                
+                if not args.no_wandb:
+                    for j, l in zip(args.test_time_jumps, test_loss_list):
+                        wandb.log({
+                            f'test/loss_jump_{j}': float(l),
+                            'train/step': global_step,
+                        }, step=global_step)
+
 
         epoch_loss /= max(1, x0_train.shape[0])
         print(f"Epoch {ep + 1}/{cfg.epochs} - avg train loss: {epoch_loss:.6f}")
@@ -606,6 +621,12 @@ def evaluate_action_angle(params, model, kepler_params: KeplerParams, cfg: Train
 def build_argparser():
     p = argparse.ArgumentParser(description="Train MyActionAngleNetwork on Kepler problem (flexible)")
 
+     # Exp name & Wandb
+    p.add_argument('--experiment-name', type=str, default='aan_kepler', help='Experiment name')
+    p.add_argument('--wandb-project', default='aan_kepler', help='W&B project name')
+    p.add_argument('--wandb-entity', default=None, help='W&B entity name')
+    p.add_argument('--no-wandb', type=str2bool, default=False, help='Disable W&B logging')
+    p.add_argument('--wandb-run-name', type=str, default=None, help='W&B run name (default: use experiment_name and job ID)')
     # data
     p.add_argument('--n', type=int, default=2, help='Spatial dimension (2 for 2D Kepler)')
     p.add_argument('--dt', type=float, default=0.01, help='Base step size')
@@ -710,6 +731,86 @@ def main():
         theta_predictor=args.theta_predictor,
         learn_scale=args.learn_scale,
     )
+
+    rng = jax.random.PRNGKey(0)
+    q0 = jnp.zeros((1, int(cfg.n)))
+    p0 = jnp.zeros((1, int(cfg.n)))
+    delta_t0 = jnp.asarray(0.1)
+
+    variables = model.init(rng, q0, p0, delta_t0)
+    params = variables['params']
+    num_params = sum(jax.tree_util.tree_leaves(jax.tree_util.tree_map(lambda x: x.size, params)))
+    print(f'Total parameters: {num_params}')
+
+
+    # wandb
+    if not args.no_wandb:
+        wandb_config = {
+            'experiment_name': args.experiment_name,
+            'n': args.n,            
+            'dt': args.dt,
+            'num_train': args.num_train,
+            'num_test': args.num_test,
+            'delta_t_max': args.delta_t_max,
+            'train_dist': args.train_dist,
+            'test_steps': args.test_steps,            
+            'mass': args.mass,
+            'k': args.k,
+            'eps': args.eps,
+            'dim_hidden': args.dim_hidden,
+            'dim_hidden_list': args.dim_hidden_list,
+            'num_gsblocks': args.num_gsblocks,
+            'type_polar': args.type_polar,
+            'activation': args.activation,
+            'theta_predictor': args.theta_predictor,
+            'mlp_res_connection': args.mlp_res_connection,
+            'learn_scale': args.learn_scale,
+            'epochs': args.epochs,
+            'batch_size': args.batch_size,
+            'lr': args.lr,
+            'log_every': args.log_every,
+            'w_q': args.w_q,
+            'w_p': args.w_p,
+            'w_action': args.w_action,
+            'w_hnn': args.w_hnn,
+            'action_loss_type': args.action_loss_type,
+            'save_every': args.save_every,
+            'save_dir': args.save_dir,
+            'num_params': num_params,
+            'mass_seed': args.mass_seed,
+            'model_seed': args.model_seed,
+            'train_seed': args.train_seed,
+        }
+
+        job_id = os.environ.get("PBS_JOBID") or os.environ.get("PJM_JOBID") or "local"
+        if args.wandb_run_name is not None:
+            wandb_run_name = args.wandb_run_name.format(**vars(args), job_id=job_id)
+        else:
+            wandb_run_name = f"{wandb_config['experiment_name']}_job{job_id}"
+        #run_name = args.wandb_run_name if args.wandb_run_name else f"{args.experiment_name}_T{args.T}"
+
+        wandb.init(
+            project=args.wandb_project,
+            entity=args.wandb_entity,
+            config=wandb_config,
+            name=wandb_run_name,
+        )
+    
+    run = wandb.run if not args.no_wandb else None
+
+    # save_dirを決める（Run ID 基準）
+    if not args.no_wandb:
+        if args.save_dir is None:
+            args.save_dir = f"./results/{args.experiment_name}/{run.id}"
+        # W&B上のconfigにも反映（後から見返せるように）
+        wandb.config.update({"save_dir": args.save_dir}, allow_val_change=True)
+    else:
+        if args.save_dir is None:
+            current_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+            args.save_dir = f"./results/{args.experiment_name}_{current_time}"
+    jobdir = args.save_dir
+
+    os.makedirs(jobdir, exist_ok=True)
 
     # data
     print("Building datasets...")
