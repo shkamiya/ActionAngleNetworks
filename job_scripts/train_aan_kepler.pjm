@@ -36,10 +36,11 @@ singularity exec --nv \
     --delta-t-max 0.5 \
     --train-dist LNP \
     --test-steps "1 2 5 10 20 50" \
-    --mass 1.0 \
-    --k 1.0 \
+    --mass 0.5 \
+    --k 32.0 \
     --eps 1e-8 \
     --dim-hidden 128 \
+    --dim-hidden-list "32 128 32" \
     --dim-hidden-list "32 128 32" \
     --num-gsblocks 30 \
     --type-polar canonical \

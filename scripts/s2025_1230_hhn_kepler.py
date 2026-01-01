@@ -403,7 +403,7 @@ def build_train_step(model: MyActionAngleNetwork):
         grad_norm = optax.global_norm(grads)
         return params, opt_state, loss, grad_norm, omega_norm
 
-    return jax.jit(train_step, static_argnames=('apply_fn', 'tx'))
+    return jax.jit(train_step, static_argnames=('apply_fn', 'tx', 'action_loss_type'))
 
 
 #@jax.jit
