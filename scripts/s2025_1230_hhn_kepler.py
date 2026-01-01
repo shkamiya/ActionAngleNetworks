@@ -418,9 +418,13 @@ def build_train_step(model: MyActionAngleNetwork):
 
 def make_eval_batch(apply_fn):
     @jax.jit
-    def _eval_batch(params, batch_x0, batch_xt, batch_t):
-        pred = apply_fn({'params': params}, batch_x0, batch_t, train=False)
-        return jnp.mean((pred - batch_xt) ** 2)
+    def _eval_batch(params, x, y, delta_t):
+        n = x.shape[1] // 2
+        q, p = x[:, :n], x[:, n:]
+        q_, p_, _, _ = apply_fn({'params': params}, q, p, delta_t, train=False)
+        loss_q_se = ((1.0 / (1.0 + delta_t)) * ((q_ - y[:, :n]) ** 2).sum(axis=1)).mean()#sum()
+        loss_p_se = ((1.0 / (1.0 + delta_t)) * ((p_ - y[:, n:]) ** 2).sum(axis=1)).mean()#sum()
+        return loss_q_se + loss_p_se
     return _eval_batch
 
 def train_model(cfg: TrainConfig, model: MyActionAngleNetwork, train_dataset, test_dataset):
@@ -472,7 +476,7 @@ def train_model(cfg: TrainConfig, model: MyActionAngleNetwork, train_dataset, te
                         test_dataset[0][slt],
                         test_dataset[2][slt],
                         test_dataset[3][slt],
-                        apply_fn=model.apply,
+                        #apply_fn=model.apply,
                     )))
                 if test_losses:
                     print(f"[step {global_step:05d}] eval_loss={sum(test_losses)/len(test_losses):.6f}")
