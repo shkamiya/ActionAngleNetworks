@@ -406,16 +406,22 @@ def build_train_step(model: MyActionAngleNetwork):
     return jax.jit(train_step, static_argnames=('apply_fn', 'tx'))
 
 
-@jax.jit
-def eval_batch(params, x, y, delta_t, apply_fn):
-    """Evaluate model on a batch."""
-    n = x.shape[1] // 2
-    q, p = x[:, :n], x[:, n:]
-    q_, p_, _, _ = apply_fn({'params': params}, q, p, delta_t, train=False)
-    loss_q_se = ((1.0 / (1.0 + delta_t)) * ((q_ - y[:, :n]) ** 2).sum(axis=1)).sum()
-    loss_p_se = ((1.0 / (1.0 + delta_t)) * ((p_ - y[:, n:]) ** 2).sum(axis=1)).sum()
-    return loss_q_se + loss_p_se
+#@jax.jit
+# def eval_batch(params, x, y, delta_t, apply_fn):
+#     """Evaluate model on a batch."""
+#     n = x.shape[1] // 2
+#     q, p = x[:, :n], x[:, n:]
+#     q_, p_, _, _ = apply_fn({'params': params}, q, p, delta_t, train=False)
+#     loss_q_se = ((1.0 / (1.0 + delta_t)) * ((q_ - y[:, :n]) ** 2).sum(axis=1)).sum()
+#     loss_p_se = ((1.0 / (1.0 + delta_t)) * ((p_ - y[:, n:]) ** 2).sum(axis=1)).sum()
+#     return loss_q_se + loss_p_se
 
+def make_eval_batch(apply_fn):
+    @jax.jit
+    def _eval_batch(params, batch_x0, batch_xt, batch_t):
+        pred = apply_fn({'params': params}, batch_x0, batch_t, train=False)
+        return jnp.mean((pred - batch_xt) ** 2)
+    return _eval_batch
 
 def train_model(cfg: TrainConfig, model: MyActionAngleNetwork, train_dataset, test_dataset):
     """Train the model."""
@@ -424,6 +430,8 @@ def train_model(cfg: TrainConfig, model: MyActionAngleNetwork, train_dataset, te
     params = variables['params']
     tx = optax.chain(optax.clip_by_global_norm(1.0), optax.adam(learning_rate=cfg.lr))
     opt_state = tx.init(params)
+
+    eval_batch = make_eval_batch(model.apply)
 
     x0_train, x0_dot_train, xt_train, t_train = train_dataset
     num_batches = x0_train.shape[0] // cfg.batch_size
